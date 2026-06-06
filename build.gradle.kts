@@ -24,10 +24,10 @@ tasks.register("buildPlugin") {
   dependsOn(":intellij-plugin:buildPlugin")
 }
 
-tasks.register("generateLexer") {
-  dependsOn(":intellij-plugin:generateLexer")
-}
-
-tasks.register("generateParser") {
-  dependsOn(":intellij-plugin:generateParser")
-}
+//tasks.register("generateLexer") {
+//  dependsOn(":intellij-plugin:generateLexer")
+//}
+//
+//tasks.register("generateParser") {
+//  dependsOn(":intellij-plugin:generateParser")
+//}
