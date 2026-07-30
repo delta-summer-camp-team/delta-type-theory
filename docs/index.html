@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Delta Type Theory — dependency diagram</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #0d1117;
+      --surface: #161b22;
+      --surface-secondary: #21262d;
+      --surface-hover: #292f38;
+      --text: #f0f6fc;
+      --muted: #9da7b3;
+      --border: #30363d;
+      --accent: #7aa2f7;
+      --danger: #f85149;
+      --shadow: 0 20px 60px rgb(0 0 0 / 55%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      background: var(--background);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      min-height: 2.2rem;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 0.48rem 0.78rem;
+      background: var(--surface-secondary);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      background: var(--surface-hover);
+    }
+
+    button:focus-visible,
+    #diagram .node.clickable:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    header {
+      z-index: 10;
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: rgb(22 27 34 / 96%);
+      backdrop-filter: blur(12px);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .zoom-value {
+      min-width: 4.4rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    main {
+      min-height: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem;
+    }
+
+    #status {
+      flex: none;
+      margin: 0 0 0.6rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    #diagram-shell {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      flex: 1;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 1px 1px, rgb(125 137 153 / 16%) 1px, transparent 0)
+          0 0 / 24px 24px,
+        var(--background);
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / 1.5%);
+      cursor: grab;
+    }
+
+    #diagram-shell.dragging {
+      cursor: grabbing;
+    }
+
+    #diagram {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: max-content;
+      padding: 24px;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    #diagram svg {
+      display: block;
+      max-width: none !important;
+      overflow: visible;
+      background: transparent !important;
+    }
+
+    #diagram .cluster rect {
+      fill: #161b22 !important;
+      stroke: #3b4552 !important;
+    }
+
+    #diagram .cluster-label,
+    #diagram .cluster-label span,
+    #diagram .cluster-label p {
+      color: #d8dee9 !important;
+      fill: #d8dee9 !important;
+    }
+
+    #diagram .edgePath path {
+      stroke: #8b949e !important;
+    }
+
+    #diagram marker path {
+      fill: #8b949e !important;
+      stroke: #8b949e !important;
+    }
+
+    #diagram .edgeLabel,
+    #diagram .edgeLabel p,
+    #diagram .edgeLabel span {
+      color: #c9d1d9 !important;
+      background: #0d1117 !important;
+    }
+
+    #diagram .node.clickable {
+      cursor: pointer;
+    }
+
+    #diagram .node.clickable:hover > rect,
+    #diagram .node.clickable:hover > polygon,
+    #diagram .node.clickable:hover > path,
+    #diagram .node.clickable:hover > circle,
+    #diagram .node.clickable:hover > ellipse {
+      filter: brightness(1.14);
+      stroke-width: 3px !important;
+    }
+
+    #diagram .node.selected > rect,
+    #diagram .node.selected > polygon,
+    #diagram .node.selected > path,
+    #diagram .node.selected > circle,
+    #diagram .node.selected > ellipse {
+      stroke: var(--accent) !important;
+      stroke-width: 4px !important;
+      filter: drop-shadow(0 0 8px rgb(122 162 247 / 45%));
+    }
+
+    .viewport-help {
+      position: absolute;
+      right: 0.8rem;
+      bottom: 0.7rem;
+      pointer-events: none;
+      padding: 0.38rem 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgb(22 27 34 / 82%);
+      color: var(--muted);
+      font-size: 0.75rem;
+      backdrop-filter: blur(6px);
+    }
+
+    .error {
+      max-width: 70rem;
+      margin: 2rem;
+      padding: 1rem;
+      border: 1px solid var(--danger);
+      border-radius: 10px;
+      background: rgb(248 81 73 / 12%);
+      white-space: pre-wrap;
+      user-select: text;
+    }
+
+    dialog {
+      width: min(800px, calc(100vw - 2rem));
+      max-height: calc(100vh - 2rem);
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+
+    dialog::backdrop {
+      background: rgb(0 0 0 / 68%);
+      backdrop-filter: blur(3px);
+    }
+
+    .dialog-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.15rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .dialog-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.35;
+    }
+
+    .close-button {
+      min-width: 2.4rem;
+      padding: 0.35rem;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    #task-content {
+      padding: 0.5rem 1.2rem 1.5rem;
+      overflow-wrap: anywhere;
+      line-height: 1.55;
+      user-select: text;
+    }
+
+    #task-content h1,
+    #task-content h2,
+    #task-content h3 {
+      line-height: 1.3;
+    }
+
+    #task-content code {
+      padding: 0.12rem 0.3rem;
+      border-radius: 5px;
+      background: var(--surface-secondary);
+    }
+
+    #task-content pre {
+      overflow: auto;
+      padding: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #0d1117;
+    }
+
+    #task-content pre code {
+      padding: 0;
+      background: transparent;
+    }
+
+    #task-content table {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      border-collapse: collapse;
+    }
+
+    #task-content th,
+    #task-content td {
+      padding: 0.45rem 0.65rem;
+      border: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    #task-content a {
+      color: var(--accent);
+    }
+
+    @media (max-width: 760px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      main {
+        padding: 0.45rem;
+      }
+
+      .viewport-help {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Delta Type Theory dependency diagram</h1>
+
+    <div class="toolbar">
+      <button id="zoom-out" type="button" title="Уменьшить">−</button>
+      <button id="zoom-value" class="zoom-value" type="button" title="Вернуть масштаб 100%">100%</button>
+      <button id="zoom-in" type="button" title="Увеличить">+</button>
+      <button id="fit-screen" type="button" title="Вместить диаграмму в экран">Вместить</button>
+    </div>
+  </header>
+
+  <main>
+    <p id="status">Загрузка <code>plan.md</code>…</p>
+    <section id="diagram-shell" aria-label="Диаграмма зависимостей">
+      <div id="diagram"></div>
+      <div class="viewport-help">Перетаскивание — мышь · масштаб — колесо</div>
+    </section>
+  </main>
+
+  <dialog id="task-dialog">
+    <div class="dialog-header">
+      <h2 id="task-title"></h2>
+      <button id="close-dialog" class="close-button" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <article id="task-content"></article>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js"></script>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs";
+    import { marked } from "https://cdn.jsdelivr.net/npm/marked@18.0.7/lib/marked.esm.js";
+
+    const PLAN_URL = "./plan.md";
+    const MIN_SCALE = 0.18;
+    const MAX_SCALE = 4;
+    const DIAGRAM_PADDING = 48;
+
+    const statusElement = document.querySelector("#status");
+    const diagramElement = document.querySelector("#diagram");
+    const diagramShell = document.querySelector("#diagram-shell");
+    const dialog = document.querySelector("#task-dialog");
+    const taskTitle = document.querySelector("#task-title");
+    const taskContent = document.querySelector("#task-content");
+    const zoomValueButton = document.querySelector("#zoom-value");
+
+    let tasks = new Map();
+    let svgWidth = 0;
+    let svgHeight = 0;
+    let viewport = { x: 24, y: 24, scale: 1 };
+    let pointerState = null;
+    let suppressClickUntil = 0;
+
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "base",
+      themeVariables: {
+        background: "#0d1117",
+        primaryTextColor: "#f0f6fc",
+        secondaryTextColor: "#f0f6fc",
+        tertiaryTextColor: "#f0f6fc",
+        lineColor: "#8b949e",
+        clusterBkg: "#161b22",
+        clusterBorder: "#3b4552",
+        edgeLabelBackground: "#0d1117",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      },
+      flowchart: {
+        htmlLabels: true,
+        useMaxWidth: false,
+        curve: "basis",
+      },
+    });
+
+    marked.setOptions({
+      gfm: true,
+      breaks: false,
+    });
+
+    function clamp(value, minimum, maximum) {
+      return Math.min(maximum, Math.max(minimum, value));
+    }
+
+    function extractMermaid(markdown) {
+      const match = markdown.match(/```mermaid\s*\r?\n([\s\S]*?)```/i);
+      if (!match) {
+        throw new Error("В Markdown не найден блок ```mermaid ... ```.");
+      }
+      return match[1].trim();
+    }
+
+    function parseTasks(markdown) {
+      const lines = markdown.replaceAll("\r\n", "\n").split("\n");
+      const result = new Map();
+
+      for (let index = 0; index < lines.length; index += 1) {
+        const match = lines[index].match(/^###\s+([A-Za-z]+\d+):\s*(.+?)\s*$/);
+        if (!match) continue;
+
+        const [, rawId, title] = match;
+        const id = rawId.toUpperCase();
+        const bodyLines = [];
+        let cursor = index + 1;
+        let inFence = false;
+
+        while (cursor < lines.length) {
+          const line = lines[cursor];
+
+          const trimmedLine = line.trim();
+          const backtickFenceCount = (trimmedLine.match(/```/g) ?? []).length;
+
+          // Toggle only for a real multi-line fence. A line such as
+          // ```some inline code``` contains two markers and must not hide
+          // all following Markdown headings from the task parser.
+          if (trimmedLine.startsWith("```") && backtickFenceCount % 2 === 1) {
+            inFence = !inFence;
+          }
+
+          if (!inFence && /^#{1,3}\s+/.test(line)) {
+            break;
+          }
+
+          bodyLines.push(line);
+          cursor += 1;
+        }
+
+        while (bodyLines.length && /^\s*(---)?\s*$/.test(bodyLines.at(-1))) {
+          bodyLines.pop();
+        }
+
+        result.set(id, {
+          id,
+          title: `${id}: ${title}`,
+          markdown: bodyLines.join("\n").trim(),
+        });
+
+        index = cursor - 1;
+      }
+
+      return result;
+    }
+
+    function taskIdFromNode(node) {
+      const generatedId = node.id || "";
+      const idMatch = generatedId.match(/^flowchart-([A-Za-z]+\d+)-\d+$/);
+      if (idMatch) {
+        return idMatch[1].toUpperCase();
+      }
+
+      const labelMatch = (node.textContent || "").trim().match(/^([A-Za-z]+\d+)\s*:/);
+      return labelMatch?.[1]?.toUpperCase() ?? null;
+    }
+
+    function bindTaskNodes() {
+      let boundCount = 0;
+
+      diagramElement.querySelectorAll(".node").forEach((node) => {
+        const taskId = taskIdFromNode(node);
+        if (!taskId || !tasks.has(taskId)) return;
+
+        node.dataset.taskId = taskId;
+        node.classList.add("clickable");
+        node.setAttribute("role", "button");
+        node.setAttribute("tabindex", "0");
+        node.setAttribute("aria-label", `Открыть описание задачи ${taskId}`);
+        boundCount += 1;
+      });
+
+      return boundCount;
+    }
+
+    function selectNode(nodeId) {
+      diagramElement.querySelectorAll(".node.selected").forEach((node) => {
+        node.classList.remove("selected");
+      });
+
+      diagramElement
+        .querySelector(`.node[data-task-id="${CSS.escape(nodeId)}"]`)
+        ?.classList.add("selected");
+    }
+
+    function openTask(nodeId) {
+      const task = tasks.get(nodeId);
+      if (!task) return;
+
+      taskTitle.textContent = task.title;
+      taskContent.innerHTML = DOMPurify.sanitize(marked.parse(task.markdown));
+
+      taskContent.querySelectorAll("a").forEach((link) => {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      });
+
+      selectNode(nodeId);
+      history.replaceState(null, "", `#${encodeURIComponent(nodeId)}`);
+
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    }
+
+    function closeDialog() {
+      if (dialog.open) dialog.close();
+      diagramElement.querySelectorAll(".node.selected").forEach((node) => {
+        node.classList.remove("selected");
+      });
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+
+    function readSvgDimensions(svg) {
+      const viewBox = svg.viewBox?.baseVal;
+      if (viewBox?.width && viewBox?.height) {
+        return { width: viewBox.width, height: viewBox.height };
+      }
+
+      return {
+        width: Number.parseFloat(svg.getAttribute("width")) || 1200,
+        height: Number.parseFloat(svg.getAttribute("height")) || 800,
+      };
+    }
+
+    function applyViewport() {
+      diagramElement.style.transform =
+        `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`;
+      zoomValueButton.textContent = `${Math.round(viewport.scale * 100)}%`;
+    }
+
+    function centerAtScale(scale) {
+      const shellWidth = diagramShell.clientWidth;
+      const shellHeight = diagramShell.clientHeight;
+      const contentWidth = svgWidth + DIAGRAM_PADDING;
+      const contentHeight = svgHeight + DIAGRAM_PADDING;
+
+      viewport = {
+        scale: clamp(scale, MIN_SCALE, MAX_SCALE),
+        x: (shellWidth - contentWidth * scale) / 2,
+        y: (shellHeight - contentHeight * scale) / 2,
+      };
+      applyViewport();
+    }
+
+    function fitToScreen() {
+      if (!svgWidth || !svgHeight) return;
+
+      const availableWidth = Math.max(100, diagramShell.clientWidth - 40);
+      const availableHeight = Math.max(100, diagramShell.clientHeight - 40);
+      const contentWidth = svgWidth + DIAGRAM_PADDING;
+      const contentHeight = svgHeight + DIAGRAM_PADDING;
+      const fittedScale = clamp(
+        Math.min(availableWidth / contentWidth, availableHeight / contentHeight),
+        MIN_SCALE,
+        1.25,
+      );
+
+      centerAtScale(fittedScale);
+    }
+
+    function zoomAt(nextScale, clientX, clientY) {
+      const shellBounds = diagramShell.getBoundingClientRect();
+      const localX = clientX - shellBounds.left;
+      const localY = clientY - shellBounds.top;
+      const clampedScale = clamp(nextScale, MIN_SCALE, MAX_SCALE);
+
+      const worldX = (localX - viewport.x) / viewport.scale;
+      const worldY = (localY - viewport.y) / viewport.scale;
+
+      viewport.x = localX - worldX * clampedScale;
+      viewport.y = localY - worldY * clampedScale;
+      viewport.scale = clampedScale;
+      applyViewport();
+    }
+
+    function zoomFromCenter(multiplier) {
+      const bounds = diagramShell.getBoundingClientRect();
+      zoomAt(
+        viewport.scale * multiplier,
+        bounds.left + bounds.width / 2,
+        bounds.top + bounds.height / 2,
+      );
+    }
+
+    async function renderMarkdown(markdown, sourceName = "plan.md") {
+      statusElement.textContent = `Читаю ${sourceName}…`;
+      tasks = parseTasks(markdown);
+
+      if (tasks.size === 0) {
+        throw new Error(
+          "Не найдены разделы задач. Ожидаются заголовки вида `### P1: Название`.",
+        );
+      }
+
+      const renderId = `dependency-diagram-${Date.now()}`;
+      const { svg } = await mermaid.render(renderId, extractMermaid(markdown));
+
+      diagramElement.innerHTML = svg;
+
+      const svgElement = diagramElement.querySelector("svg");
+      const dimensions = readSvgDimensions(svgElement);
+      svgWidth = dimensions.width;
+      svgHeight = dimensions.height;
+      svgElement.style.width = `${svgWidth}px`;
+      svgElement.style.height = `${svgHeight}px`;
+
+      const boundCount = bindTaskNodes();
+      fitToScreen();
+
+      statusElement.textContent =
+        `Загружено задач: ${tasks.size}; кликабельных узлов: ${boundCount}. ` +
+        "Нажмите на задачу, перетаскивайте поле мышью, масштабируйте колесом.";
+
+      const taskFromHash = decodeURIComponent(location.hash.slice(1)).toUpperCase();
+      if (taskFromHash && tasks.has(taskFromHash)) {
+        openTask(taskFromHash);
+      }
+    }
+
+    async function loadPlan() {
+      try {
+        const response = await fetch(PLAN_URL, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`Не удалось загрузить ${PLAN_URL}: HTTP ${response.status}`);
+        }
+
+        await renderMarkdown(await response.text(), PLAN_URL);
+      } catch (error) {
+        statusElement.textContent = "Не удалось загрузить план.";
+        diagramElement.innerHTML = `<div class="error">${DOMPurify.sanitize(
+          String(error?.message ?? error),
+        )}</div>`;
+      }
+    }
+
+    diagramElement.addEventListener("click", (event) => {
+      if (performance.now() < suppressClickUntil) return;
+
+      const node = event.target.closest?.(".node[data-task-id]");
+      if (!node) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      openTask(node.dataset.taskId);
+    });
+
+    diagramElement.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+
+      const node = event.target.closest?.(".node[data-task-id]");
+      if (!node) return;
+
+      event.preventDefault();
+      openTask(node.dataset.taskId);
+    });
+
+    diagramShell.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      const multiplier = Math.exp(-event.deltaY * 0.0015);
+      zoomAt(viewport.scale * multiplier, event.clientX, event.clientY);
+    }, { passive: false });
+
+    diagramShell.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 || !event.isPrimary) return;
+
+      event.preventDefault();
+      diagramShell.setPointerCapture(event.pointerId);
+      pointerState = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: viewport.x,
+        originY: viewport.y,
+        taskId: event.target.closest?.(".node[data-task-id]")?.dataset.taskId ?? null,
+        moved: false,
+      };
+    });
+
+    diagramShell.addEventListener("pointermove", (event) => {
+      if (!pointerState || pointerState.pointerId !== event.pointerId) return;
+
+      const deltaX = event.clientX - pointerState.startX;
+      const deltaY = event.clientY - pointerState.startY;
+
+      if (!pointerState.moved && Math.hypot(deltaX, deltaY) > 4) {
+        pointerState.moved = true;
+        diagramShell.classList.add("dragging");
+      }
+
+      if (!pointerState.moved) return;
+
+      viewport.x = pointerState.originX + deltaX;
+      viewport.y = pointerState.originY + deltaY;
+      applyViewport();
+    });
+
+    function finishPointer(event) {
+      if (!pointerState || pointerState.pointerId !== event.pointerId) return;
+
+      if (pointerState.moved) {
+        suppressClickUntil = performance.now() + 180;
+      } else if (pointerState.taskId) {
+        suppressClickUntil = performance.now() + 180;
+        openTask(pointerState.taskId);
+      }
+
+      pointerState = null;
+      diagramShell.classList.remove("dragging");
+
+      if (diagramShell.hasPointerCapture(event.pointerId)) {
+        diagramShell.releasePointerCapture(event.pointerId);
+      }
+    }
+
+    diagramShell.addEventListener("pointerup", finishPointer);
+    diagramShell.addEventListener("pointercancel", finishPointer);
+
+    diagramShell.addEventListener("dblclick", (event) => {
+      if (event.target.closest?.(".node[data-task-id]")) return;
+      fitToScreen();
+    });
+
+
+    document.querySelector("#zoom-in").addEventListener("click", () => zoomFromCenter(1.18));
+    document.querySelector("#zoom-out").addEventListener("click", () => zoomFromCenter(1 / 1.18));
+    zoomValueButton.addEventListener("click", () => centerAtScale(1));
+    document.querySelector("#fit-screen").addEventListener("click", fitToScreen);
+
+    document.querySelector("#close-dialog").addEventListener("click", closeDialog);
+
+    dialog.addEventListener("click", (event) => {
+      const bounds = dialog.getBoundingClientRect();
+      const outside =
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom;
+
+      if (outside) closeDialog();
+    });
+
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeDialog();
+    });
+
+    window.addEventListener("resize", () => {
+      if (!pointerState) fitToScreen();
+    });
+
+    await loadPlan();
+  </script>
+</body>
+</html>
