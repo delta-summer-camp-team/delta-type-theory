@@ -123,10 +123,10 @@ graph LR
 
 - **Название проекта и языка:** Delta Type Theory
 - **Имя репозитория:** `delta-type-theory`
-- **Префикс Kotlin-классов:** `DeltaTypeTheory`
+- **Префикс Kotlin-классов:** `DeltaTypeTheory.bnf`
 - **Корневой package:** `camp.delta.deltatypetheory`
 - **Расширение исходных файлов:** `.delta`
-- **ID языка в IntelliJ Platform:** `DeltaTypeTheory`
+- **ID языка в IntelliJ Platform:** `DeltaTypeTheory.bnf`
 
 ---
 
@@ -151,7 +151,7 @@ graph LR
 - **Как делать:**
   Создайте в package `camp.delta.deltatypetheory.plugin.language` два объекта (ключевое слово `object`):
   - `DeltaTypeTheoryLanguage`, представляющий язык Delta Type Theory в IntelliJ Platform;
-    должен быть наследовать IntelliJ-класс `Language` и иметь ID `DeltaTypeTheory`.
+    должен быть наследовать IntelliJ-класс `Language` и иметь ID `DeltaTypeTheory.bnf`.
   - `DeltaTypeTheoryFileType`, представляющий тип файлов этого языка;
     должен наследовать `LanguageFileType` и связан с `DeltaTypeTheoryLanguage`
   - Зарегистрируйте `DeltaTypeTheoryFileType` в `plugin.xml` через extension point `com.intellij.fileType`.
