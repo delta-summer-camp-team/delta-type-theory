@@ -1,9 +1,9 @@
 package camp.delta.deltatypetheory.core.surface.model
 
 sealed interface SurfaceDecl {
-    val name: SurfaceName
-    val type: SurfaceTerm
-    val range: SourceRange?
+        val name: SurfaceName
+        val type: SurfaceTerm
+        val range: SourceRange?
 }
 
 data class SurfaceAxiomDecl(
@@ -15,5 +15,6 @@ data class SurfaceAxiomDecl(
 data class SurfaceDefDecl(
         override val name: SurfaceName,
         override val type: SurfaceTerm,
+        val value: SurfaceTerm,
         override val range: SourceRange?,
 ) : SurfaceDecl
