@@ -6,6 +6,7 @@
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>Delta Type Theory</name>
+
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="delta.camp" url="https://delta.camp">Delta</vendor>
 
@@ -23,14 +24,6 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <fileType
-                name="DeltaTypeTheory"
-                implementationClass="camp.delta.deltatypetheory.plugin.language.DeltaTypeTheoryFileType"
-                fieldname = "INSTANCE"
-                language = "DeltaTypeTheory"
-                extensions = "delta"
-
-        />
     </extensions>
 
 </idea-plugin>
