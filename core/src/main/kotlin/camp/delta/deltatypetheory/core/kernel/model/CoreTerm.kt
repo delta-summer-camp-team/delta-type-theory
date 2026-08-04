@@ -21,7 +21,7 @@ data class App(
 
 // Terminals / Leaves
 
-data Object TypeTerm : CoreTerm 
+data object TypeTerm : CoreTerm
 //TODO: speak with Anton wether we should maybe use proper environments
 data class BoundVar(val index: Int) : CoreTerm
 
