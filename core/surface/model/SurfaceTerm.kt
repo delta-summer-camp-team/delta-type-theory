@@ -9,13 +9,13 @@ data class SurfacePi(
 ) : SurfaceTerm
 
 data class SurfaceLambda(
-  val binder: SurfaceBinder
-  val body: SurfaceTerm
+  val binder: SurfaceBinder,
+  val body: SurfaceTerm,
 ) : SurfaceTerm
 
 data class SurfaceApp(
-  val function: SurfaceTerm
-  val argument: SurfaceTerm
+  val function: SurfaceTerm,
+  val argument: SurfaceTerm,
 ) : SurfaceTerm
 
 // Terminals 
