@@ -29,7 +29,7 @@
                 implementationClass="camp.delta.deltatypetheory.plugin.language.DeltaTypeTheoryFileType"
                 fieldName="INSTANCE"
                 language="DeltaTypeTheory"
-                extensions="delta"/>
+                extensions="kalas"/>
     </extensions>
 
 </idea-plugin>
