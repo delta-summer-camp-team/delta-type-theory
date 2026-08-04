@@ -215,9 +215,9 @@ graph LR
     - `createLexer` → `DeltaTypeTheoryJFlexLexer()`
     - `createParser` → `DeltaTypeTheoryJFlexParser()` -- сгенерированный парсер
     - `createFile(viewProvider)` → `DeltaTypeTheoryFile(viewProvider)`
-    - `createElement(node)` → `DeltaTypeTheoryTypes.Factory.createElement(node)` -- сгенерированная фабрика
+    - `createElement(node)` → `DeltaTypeTheoryType.Factory.createElement(node)` -- сгенерированная фабрика
     - `getWhitespaceTokens` → `TokenType.WHITE_SPACE`
-    - `getCommentTokens` → `DeltaTypeTheoryTypes.COMMENT`
+    - `getCommentTokens` → `DeltaTypeTheoryType.COMMENT`
     - `getStringLiteralElements` → `TokenSet.EMPTY`, поскольку строковых литералов в языке нет
     - package: `camp.delta.deltatypetheory.plugin.parser`
   - Зарегистрировать `<extensionPoint lang.parserDefinition>` в `plugin.xml`.
