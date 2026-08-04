@@ -1,7 +1,7 @@
 {
 parserClass="camp.delta.deltatypetheory.plugin.parser.DeltaTypeTheoryParser"
 
-elementTypeHolderClass="camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryTypes"
+elementTypeHolderClass="camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryType"
 elementTypeClass="camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryElementType"
 tokenTypeClass="camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryTokenType"
 
@@ -10,18 +10,20 @@ psiImplClassSuffix="Impl"
 psiPackage="camp.delta.deltatypetheory.plugin.psi"
 psiImplPackage="camp.delta.deltatypetheory.plugin.psi.impl"
 
-elementTypeFactory="camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryTypes.Factory.createElement"
+//elementTypeFactory="camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryType.Factory.createElement"
   tokens = [
     AXIOM_KEYWORD  = 'axiom'
     DEF_KEYWORD    = 'def'
-    ASSIGN         = ':='
-    ARROW          = '->'
-    FAT_ARROW      = '=>'
+    EQUAL          = ':='
+    TO             = '->'
+    FOLLOWS        = '=>'
     LAMBDA         = 'λ'
     COLON          = ':'
     LPAREN         = '('
     RPAREN         = ')'
     SEMICOLON      = ';'
+    COMMENT        = 'regexp://.*'
+    IDENTIFIER     = 'regexp:[a-zA-Z_][a-zA-Z0-9_]*'
   ]
 }
 
@@ -29,20 +31,18 @@ deltaTypeTheoryFile ::= item*
 
 item ::= axiomDecl | defDecl
 
-axiomDecl ::= AXIOM_KEYWORD identifier COLON expr SEMICOLON
+axiomDecl ::= AXIOM_KEYWORD IDENTIFIER COLON expr SEMICOLON
 
-defDecl ::= DEF_KEYWORD identifier COLON expr ASSIGN expr SEMICOLON
-
-identifier ::= IDENTIFIER
+defDecl ::= DEF_KEYWORD IDENTIFIER COLON expr EQUAL expr SEMICOLON
 
 expr ::= lambdaExpr | piExpr | application | atom
 
-lambdaExpr ::= LAMBDA LPAREN identifier COLON expr RPAREN FAT_ARROW expr
+lambdaExpr ::= LAMBDA LPAREN IDENTIFIER COLON expr RPAREN FOLLOWS expr
 
-piExpr ::= LPAREN identifier COLON expr RPAREN ARROW expr
+piExpr ::= LPAREN IDENTIFIER COLON expr RPAREN TO expr
 
 application ::= atom argument+
 
 argument ::= LPAREN expr RPAREN
 
-atom ::= identifier | LPAREN expr RPAREN
+atom ::= IDENTIFIER | LPAREN expr RPAREN

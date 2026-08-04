@@ -47,13 +47,13 @@ kotlin {
 
 val generatedLexerDir = layout.buildDirectory.dir("generated/sources/grammarKit/lexer")
 val generatedParserDir = layout.buildDirectory.dir("generated/sources/grammarKit/parser")
-//
-//sourceSets {
-//  main {
-//    java.srcDir(generatedLexerDir)
-//    java.srcDir(generatedParserDir)
-//  }
-//}
+
+sourceSets {
+  main {
+    java.srcDir(generatedLexerDir)
+    java.srcDir(generatedParserDir)
+  }
+}
 
 tasks {
   generateLexer {
@@ -66,13 +66,13 @@ tasks {
     targetRootOutputDir.set(generatedParserDir)
   }
 
-//  compileJava {
-//    dependsOn(generateLexer, generateParser)
-//  }
-//
-//  compileKotlin {
-//    dependsOn(generateLexer, generateParser)
-//  }
+  compileJava {
+  dependsOn(generateLexer, generateParser)
+  }
+
+  compileKotlin {
+  dependsOn(generateLexer, generateParser)
+  }
 
   test {
     useJUnitPlatform()
