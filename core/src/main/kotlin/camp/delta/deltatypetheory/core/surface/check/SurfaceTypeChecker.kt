@@ -22,7 +22,7 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
         return SurfaceCheckResult(reporter.all())
     }
 
-    fun checkGlobal(declaration: SurfaceDecl) {
+    private fun checkGlobal(declaration: SurfaceDecl) {
         val type =
                 when (declaration) {
                     is SurfaceDefDecl -> "defintion"
@@ -40,7 +40,7 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
         }
     }
 
-    fun checkTerm(term: SurfaceTerm) {
+    private fun checkTerm(term: SurfaceTerm) {
         when (term) {
             is SurfacePi -> {
                 checkBinder(term.binder)
@@ -60,7 +60,7 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
                 } else if (term.name in usedLocalNames) {
                     reporter.reportError(
                             "Name ${term.name.value} already used in a outer binder",
-                            null
+                            null,
                     )
                 }
             }
@@ -68,7 +68,7 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
         }
     }
 
-    fun checkBinder(binder: SurfaceBinder) {
+    private fun checkBinder(binder: SurfaceBinder) {
         val name = binder.name
         var pushed = false
         if (name in usedGlobalNames) {
