@@ -117,5 +117,5 @@ private fun CoreTerm.substitute(index: Int, replacement: CoreTerm, depth: Int = 
 }
 
 /** Подстановка самой верхней переменной (позиция 0) в [body] -- форма результата бета-редукции. */
-private fun substituteTop(body: CoreTerm, replacement: CoreTerm): CoreTerm =
+internal fun substituteTop(body: CoreTerm, replacement: CoreTerm): CoreTerm =
   body.substitute(index = 0, replacement = replacement)
