@@ -1,26 +1,26 @@
-package camp.delta.deltatypetheory.core.surface.model;
+package camp.delta.deltatypetheory.core.surface.model
 
 sealed interface SurfaceTerm
 
 // Non-terminals
 data class SurfacePi(
-  val binder: SurfaceBinder,
-  val body: SurfaceTerm
+    val binder: SurfaceBinder,
+    val body: SurfaceTerm,
 ) : SurfaceTerm
 
 data class SurfaceLambda(
-  val binder: SurfaceBinder,
-  val body: SurfaceTerm,
+    val binder: SurfaceBinder,
+    val body: SurfaceTerm,
 ) : SurfaceTerm
 
 data class SurfaceApp(
-  val function: SurfaceTerm,
-  val argument: SurfaceTerm,
+    val function: SurfaceTerm,
+    val argument: SurfaceTerm,
 ) : SurfaceTerm
 
-// Terminals 
+// Terminals
 data object SurfaceTypeTerm : SurfaceTerm
 
 data class SurfaceNameRef(
-  val name: SurfaceName
+    val name: SurfaceName,
 ) : SurfaceTerm
