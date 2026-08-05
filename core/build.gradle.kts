@@ -13,11 +13,11 @@ dependencies {
 
 kotlin {
   jvmToolchain(21)
-   sourceSets {
-      main {
-        kotlin.srcDir(".")
-      }
-    }
+   // sourceSets {
+   //    main {
+   //      kotlin.srcDir(".")
+   //    }
+   //  }
 }
 
 tasks.test {
