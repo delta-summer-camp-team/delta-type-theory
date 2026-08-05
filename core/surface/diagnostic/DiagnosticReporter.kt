@@ -9,7 +9,10 @@ class DiagnosticReporter {
         diagnostics.add(diagnostic)
     }
 
-    fun reportError(message: String, range: SourceRange?) {
+    fun reportError(
+        message: String,
+        range: SourceRange?,
+    ) {
         diagnostics.add(SurfaceDiagnostic(SurfaceDiagnosticSeverity.Error, message, range))
         // System.err.println(
         //         "\u001BError in ${range.filePath} from ${range.startOffset} to
@@ -17,11 +20,7 @@ class DiagnosticReporter {
         // )
     }
 
-    fun all(): List<SurfaceDiagnostic> {
-        return diagnostics
-    }
+    fun all(): List<SurfaceDiagnostic> = diagnostics
 
-    fun hasErrors(): Boolean {
-        return diagnostics.isEmpty()
-    }
+    fun hasErrors(): Boolean = diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error }
 }
