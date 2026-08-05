@@ -45,34 +45,34 @@ kotlin {
   }
 }
 
-//val generatedLexerDir = layout.buildDirectory.dir("generated/sources/grammarKit/lexer")
-//val generatedParserDir = layout.buildDirectory.dir("generated/sources/grammarKit/parser")
-//
-//sourceSets {
-//  main {
-//    java.srcDir(generatedLexerDir)
-//    java.srcDir(generatedParserDir)
-//  }
-//}
+val generatedLexerDir = layout.buildDirectory.dir("generated/sources/grammarKit/lexer")
+val generatedParserDir = layout.buildDirectory.dir("generated/sources/grammarKit/parser")
+
+sourceSets {
+  main {
+    java.srcDir(generatedLexerDir)
+    java.srcDir(generatedParserDir)
+  }
+}
 
 tasks {
-//  generateLexer {
-//    sourceFile.set(file("src/main/grammar/DeltaTPLexer.flex"))
-//    targetRootOutputDir.set(generatedLexerDir)
-//  }
-//
-//  generateParser {
-//    sourceFile.set(file("src/main/grammar/DeltaTP.bnf"))
-//    targetRootOutputDir.set(generatedParserDir)
-//  }
+  generateLexer {
+    sourceFile.set(file("src/main/grammar/DeltaTypeTheoryLexer.flex"))
+    targetRootOutputDir.set(generatedLexerDir)
+  }
 
-//  compileJava {
-//    dependsOn(generateLexer, generateParser)
-//  }
-//
-//  compileKotlin {
-//    dependsOn(generateLexer, generateParser)
-//  }
+  generateParser {
+    sourceFile.set(file("src/main/grammar/DeltaTypeTheory.bnf"))
+    targetRootOutputDir.set(generatedParserDir)
+  }
+
+  compileJava {
+  dependsOn(generateLexer, generateParser)
+  }
+
+  compileKotlin {
+  dependsOn(generateLexer, generateParser)
+  }
 
   test {
     useJUnitPlatform()

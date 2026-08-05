@@ -24,6 +24,17 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <fileType
+                name="DeltaTypeTheory"
+                implementationClass="camp.delta.deltatypetheory.plugin.language.DeltaTypeTheoryFileType"
+                fieldName = "INSTANCE"
+                language = "DeltaTypeTheory"
+                extensions = "delta"
+        />
+        <lang.parserDefinition
+            language = "DeltaTypeTheory"
+            implementationClass = "camp.delta.deltatypetheory.plugin.parser.DeltaTypeTheoryParserDefinition"
+        />
     </extensions>
 
 </idea-plugin>
