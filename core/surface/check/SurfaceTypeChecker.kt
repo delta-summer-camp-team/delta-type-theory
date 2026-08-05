@@ -22,12 +22,12 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
         return SurfaceCheckResult(reporter.all())
     }
 
-    fun checkGlobal(declaration: SurfaceDecl) {
+    private fun checkGlobal(declaration: SurfaceDecl) {
         val type =
-            when (declaration) {
-                is SurfaceDefDecl -> "defintion"
-                is SurfaceAxiomDecl -> "axiom"
-            }
+                when (declaration) {
+                    is SurfaceDefDecl -> "defintion"
+                    is SurfaceAxiomDecl -> "axiom"
+                }
         val name = declaration.name
         if (name in usedGlobalNames) {
             reporter.reportError("Name ${name.value} already used for another $type", null)
@@ -40,39 +40,35 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
         }
     }
 
-    fun checkTerm(term: SurfaceTerm) {
+    private fun checkTerm(term: SurfaceTerm) {
         when (term) {
             is SurfacePi -> {
                 checkBinder(term.binder)
                 checkTerm(term.body)
             }
-
             is SurfaceLambda -> {
                 checkBinder(term.binder)
                 checkTerm(term.body)
             }
-
             is SurfaceApp -> {
                 checkTerm(term.function)
                 checkTerm(term.argument)
             }
-
             is SurfaceNameRef -> {
                 if (term.name in usedGlobalNames) {
                     reporter.reportError("Name ${term.name.value} already used globally", null)
                 } else if (term.name in usedLocalNames) {
                     reporter.reportError(
-                        "Name ${term.name.value} already used in a outer binder",
-                        null,
+                            "Name ${term.name.value} already used in a outer binder",
+                            null,
                     )
                 }
             }
-
             is SurfaceTypeTerm -> {}
         }
     }
 
-    fun checkBinder(binder: SurfaceBinder) {
+    private fun checkBinder(binder: SurfaceBinder) {
         val name = binder.name
         var pushed = false
         if (name in usedGlobalNames) {
