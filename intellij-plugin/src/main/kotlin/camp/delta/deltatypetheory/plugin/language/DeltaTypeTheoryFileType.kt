@@ -11,7 +11,7 @@ import com.intellij.openapi.util.IconLoader
 
 object DeltaIcons {
     @JvmField
-    val FILE = IconLoader.getIcon("/META-INF/pluginicon.svg", DeltaIcons::class.java)
+    val FILE = IconLoader.getIcon("/META-INF/pluginIconThumb.svg", DeltaIcons::class.java)
 }
 
 object DeltaTypeTheoryFileType : LanguageFileType(DeltaTypeTheoryLanguage) {

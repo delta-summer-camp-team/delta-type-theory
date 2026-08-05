@@ -6,6 +6,7 @@ import com.intellij.lexer.FlexLexer;
 
 %%
 
+%public
 %class DeltaTypeTheoryLexer
 %implements FlexLexer
 %unicode
