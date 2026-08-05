@@ -13,11 +13,16 @@ dependencies {
 
 kotlin {
   jvmToolchain(21)
-   sourceSets {
-      main {
-        kotlin.srcDir(".")
-      }
+  sourceSets {
+    main {
+      kotlin.srcDir(".")
+      // "." would otherwise sweep the test sources into main
+      kotlin.exclude("test/**", "build/**")
     }
+    test {
+      kotlin.srcDir("test")
+    }
+  }
 }
 
 tasks.test {
