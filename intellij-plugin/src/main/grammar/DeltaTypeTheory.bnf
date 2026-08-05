@@ -10,20 +10,22 @@ psiImplClassSuffix="Impl"
 psiPackage="camp.delta.deltatypetheory.plugin.psi"
 psiImplPackage="camp.delta.deltatypetheory.plugin.psi.impl"
 
-elementTypeFactory="camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryTypes.Factory.createElement"
-  tokens = [
-    AXIOM_KEYWORD  = 'axiom'
-    DEF_KEYWORD    = 'def'
-    ASSIGN         = ':='
-    ARROW          = '->'
-    FAT_ARROW      = '=>'
-    LAMBDA         = 'λ'
-    COLON          = ':'
-    LPAREN         = '('
-    RPAREN         = ')'
-    SEMICOLON      = ';'
-  ]
+
+tokens = [
+    AXIOM_KEYWORD
+    DEF_KEYWORD
+    IDENTIFIER
+    EQUAL
+    TO
+    FOLLOWS
+    LAMBDA
+    COLON
+    LPAREN
+    RPAREN
+    SEMICOLON
+]
 }
+
 
 deltaTypeTheoryFile ::= item*
 
@@ -31,15 +33,13 @@ item ::= axiomDecl | defDecl
 
 axiomDecl ::= AXIOM_KEYWORD identifier COLON expr SEMICOLON
 
-defDecl ::= DEF_KEYWORD identifier COLON expr ASSIGN expr SEMICOLON
-
-identifier ::= IDENTIFIER
+defDecl ::= DEF_KEYWORD identifier COLON expr EQUAL expr SEMICOLON
 
 expr ::= lambdaExpr | piExpr | application | atom
 
-lambdaExpr ::= LAMBDA LPAREN identifier COLON expr RPAREN FAT_ARROW expr
+lambdaExpr ::= LAMBDA LPAREN identifier COLON expr RPAREN FOLLOWS expr
 
-piExpr ::= LPAREN identifier COLON expr RPAREN ARROW expr
+piExpr ::= LPAREN identifier COLON expr RPAREN TO expr
 
 application ::= atom argument+
 
