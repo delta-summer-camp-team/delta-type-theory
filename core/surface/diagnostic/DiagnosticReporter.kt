@@ -3,7 +3,7 @@ package camp.delta.deltatypetheory.core.surface.diagnostic
 import camp.delta.deltatypetheory.core.surface.model.SourceRange
 
 class DiagnosticReporter {
-    val diagnostics: List<SurfaceDiagnostic> = mutableListOf()
+    val diagnostics: MutableList<SurfaceDiagnostic> = mutableListOf()
 
     fun report(diagnostic: SurfaceDiagnostic) {
         diagnostics.add(diagnostic)
