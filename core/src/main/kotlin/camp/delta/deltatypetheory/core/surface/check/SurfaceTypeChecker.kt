@@ -11,7 +11,7 @@ class StubSurfaceTypeChecker : camp.delta.deltatypetheory.core.surface.check.Sur
     // TODO make them hashmaps with offset to add lines / offsets to reporter
     val usedGlobalNames = HashSet<camp.delta.deltatypetheory.core.surface.model.SurfaceName>()
     val usedLocalNames: ArrayDeque<camp.delta.deltatypetheory.core.surface.model.SurfaceName> = ArrayDeque()
-    val reporter = _root_ide_package_.camp.delta.deltatypetheory.core.surface.diagnostic.DiagnosticReporter()
+    val reporter = DiagnosticReporter()
 
     override fun check(program: camp.delta.deltatypetheory.core.surface.model.SurfaceProgram): camp.delta.deltatypetheory.core.surface.check.SurfaceCheckResult {
         // val fileName = program.fileName
