@@ -4,16 +4,16 @@ import camp.delta.deltatypetheory.core.surface.diagnostic.*
 import camp.delta.deltatypetheory.core.surface.model.*
 
 interface SurfaceTypeChecker {
-    fun check(program: camp.delta.deltatypetheory.core.surface.model.SurfaceProgram): camp.delta.deltatypetheory.core.surface.check.SurfaceCheckResult
+    fun check(program: SurfaceProgram): SurfaceCheckResult
 }
 
-class StubSurfaceTypeChecker : camp.delta.deltatypetheory.core.surface.check.SurfaceTypeChecker {
+class StubSurfaceTypeChecker : SurfaceTypeChecker {
     // TODO make them hashmaps with offset to add lines / offsets to reporter
-    val usedGlobalNames = HashSet<camp.delta.deltatypetheory.core.surface.model.SurfaceName>()
-    val usedLocalNames: ArrayDeque<camp.delta.deltatypetheory.core.surface.model.SurfaceName> = ArrayDeque()
+    val usedGlobalNames = HashSet<SurfaceName>()
+    val usedLocalNames: ArrayDeque<SurfaceName> = ArrayDeque()
     val reporter = DiagnosticReporter()
 
-    override fun check(program: camp.delta.deltatypetheory.core.surface.model.SurfaceProgram): camp.delta.deltatypetheory.core.surface.check.SurfaceCheckResult {
+    override fun check(program: SurfaceProgram): SurfaceCheckResult {
         // val fileName = program.fileName
 
         for (declaration in program.declarations) {
