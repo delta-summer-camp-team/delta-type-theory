@@ -29,7 +29,7 @@
                 implementationClass="camp.delta.deltatypetheory.plugin.language.DeltaTypeTheoryFileType"
                 fieldName="INSTANCE"
                 language="DeltaTypeTheory"
-                extensions="tpwr"/>
+                extensions="delta"/>
     </extensions>
 
 </idea-plugin>

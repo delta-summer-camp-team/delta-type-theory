@@ -9,7 +9,7 @@ object DeltaTypeTheoryFileType : LanguageFileType(DeltaTypeTheoryLanguage) {
 
     override fun getDescription(): String = "Delta Type Theory file"
 
-    override fun getDefaultExtension(): String = "tpwr"
+    override fun getDefaultExtension(): String = "delta"
 
     override fun getIcon(): Icon? = null
 }
