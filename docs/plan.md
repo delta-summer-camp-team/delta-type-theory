@@ -41,6 +41,13 @@ graph LR
 
         M2(("M2:<br/>Реальный тайпчек")):::milestone
     end
+    
+    subgraph m3 ["M3 -- IDE features"]
+        P7["Подсветка скобок"]:::plugin
+        P8["Подсветка синтаксиса"]:::plugin
+        P9["Structure view"]:::plugin
+        P10["New file action"]:::plugin
+    end
 
 %% Plugin
 
@@ -98,8 +105,12 @@ graph LR
     C7 --> C8
 
     C8 --> S6
+    
+    P3 --> P7
+    P3 --> P8
+    P3 --> P9
+    P3 --> P10
 ```
-
 ---
 
 ## Legend
@@ -292,6 +303,66 @@ graph LR
 - **Критерии приёмки:** Ошибка в файле `.delta`, например дублирующееся имя, отображается как подсвеченная диагностика в редакторе, аналогично синтаксической ошибке в обычном языке программирования.
 
 ---
+### P7: Сделать поддержку скобок
+- **Область:** surface
+- **Этап:** M3
+- **Задача:** Сделать работу со скобками удобной!
+- **Подробности:** (нет)
+- **AC:** (нет)
+
+---
+### P8: Create syntax highlighting (colors for tokens)
+- **Scope:** plugin-ide
+- **Milestone:** M3
+- **Task:** Create `DeltaTPSyntaxHighlighter` and `DeltaTPSyntaxHighlighterFactory`.
+- **Purpose:** Color-code keywords, comments, identifiers, and operators in the editor.
+- **Details:**
+  - `DeltaTPSyntaxHighlighter : SyntaxHighlighterBase`:
+    - `getHighlightingLexer()` → `DeltaTPJFlexLexer()`
+    - `getTokenHighlights(tokenType)` — map each token type to a color category:
+      - Keywords (`axiom`, `def`, `rule`) → keyword color
+      - Comments → comment color
+      - Identifiers → identifier color
+      - Operators/punctuation → operator color
+      - Bad characters → error color
+  - `DeltaTPSyntaxHighlighterFactory : SyntaxHighlighterFactory`:
+    - `getSyntaxHighlighter(project, virtualFile)` → new `DeltaTPSyntaxHighlighter()`
+  - Register `<extensionPoint lang.syntaxHighlighterFactory>` in `plugin.xml`.
+  - Change class names if appropriate
+- **Acceptance criteria:** Keywords like `axiom` appear in a different color than identifiers (and other features).
+
+---
+
+### P9: Create the structure view
+- **Scope:** plugin
+- **Milestone:** M3
+- **Task:** Create `DeltaTPStructureViewFactory`, `DeltaTPStructureViewModel`,
+  and `DeltaTPStructureViewElement`.
+- **Purpose:** Show an outline of the file's declarations in the Structure tool window.
+- **Details:**
+  - `DeltaTPStructureViewFactory : PsiStructureViewFactory` — creates the model.
+  - `DeltaTPStructureViewModel` -- rooted at the file; lists axiom/def/rule declarations.
+  - `DeltaTPStructureViewElement` -- for each declaration, shows "axiom name" / "def name" / "rule name".
+    Children: only the file node has children (the declarations).
+  - Register `<extensionPoint lang.psiStructureViewFactory>` in `plugin.xml`.
+- **Acceptance criteria:** The Structure tool window lists all declarations in the file.
+
+---
+
+### P10: Create the new file action
+- **Name:** Create new file action
+- **Scope:** plugin
+- **Milestone:** M3
+- **Task:** Create `NewDeltaTPFileAction` and a file template.
+- **Purpose:** Add "DeltaTP File" to the New menu so users can create `.delta` files easily.
+- **Details:**
+  - `class NewDeltaTPFileAction : CreateFileFromTemplateAction("DeltaTP File", ...)`
+  - File template `DeltaTP.delta.ft` containing `-- DeltaTP file`.
+  - Register `<action id="DeltaTP.NewFile">` in `plugin.xml`, added to the New group.
+  - Register `<extensionPoint internalFileTemplate>` in `plugin.xml`.
+- **Acceptance criteria:** Right-click → New → DeltaTP File creates a `.delta` file.
+
+---
 
 ## Команда Surface
 
@@ -412,7 +483,6 @@ graph LR
 - **Подробности:** их нет
 - **AC:** Все диагностики, которые тайпчекер выдаёт правильно отображаются в IDE.
 
----
 
 ## Команда Core
 
