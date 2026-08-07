@@ -43,10 +43,10 @@ graph LR
     end
     
     subgraph m3 ["M3 -- IDE features"]
-        P7["Подсветка скобок"]:::plugin
-        P8["Подсветка синтаксиса"]:::plugin
-        P9["Structure view"]:::plugin
-        P10["New file action"]:::plugin
+        P7["P7: Подсветка скобок"]:::plugin
+        P8["P8: Подсветка синтаксиса"]:::plugin
+        P9["P9: Structure view"]:::plugin
+        P10["P10: New file action"]:::plugin
     end
 
 %% Plugin
