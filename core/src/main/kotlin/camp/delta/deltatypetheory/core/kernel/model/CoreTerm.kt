@@ -22,7 +22,6 @@ data class App(
 
 data object TypeTerm : CoreTerm
 
-// TODO: speak with Anton wether we should maybe use proper environments
 data class BoundVar(
     val index: Int,
 ) : CoreTerm
