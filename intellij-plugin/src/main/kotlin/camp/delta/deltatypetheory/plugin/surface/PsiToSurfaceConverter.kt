@@ -1,6 +1,5 @@
 package camp.delta.deltatypetheory.plugin.surface
 
-
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryType
@@ -23,7 +22,6 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
 import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
 import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
 import camp.delta.deltatypetheory.core.surface.model.SurfacePi
-
 
 class PsiToSurfaceConverter {
 
@@ -200,6 +198,5 @@ class PsiToSurfaceConverter {
             body = convertExpr(expressions[1])
         )
     }
-
 
 }
