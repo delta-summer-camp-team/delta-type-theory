@@ -1,13 +1,7 @@
-package camp.delta.deltatypetheory.core.kernel.load
+package camp.delta.deltatypetheory.core.kernel.model
 
-
-import camp.delta.deltatypetheory.core.kernel.model.CoreTerm
-
-import camp.delta.deltatypetheory.core.kernel.model.GlobalName
-
-data class GlobaBinding(
-
+data class GlobalBinding(
     val name: GlobalName,
     val type: CoreTerm,
-    val value: CoreTerm?package camp.delta.deltatypetheory.core.surface.diagnostic
+    val value: CoreTerm?
 )
