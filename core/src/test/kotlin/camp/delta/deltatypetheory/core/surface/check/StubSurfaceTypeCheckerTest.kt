@@ -1,0 +1,124 @@
+package camp.delta.deltatypetheory.core.surface.check
+
+import camp.delta.deltatypetheory.core.surface.diagnostic.SurfaceDiagnosticSeverity
+import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
+import camp.delta.deltatypetheory.core.surface.model.SurfaceAxiomDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
+import camp.delta.deltatypetheory.core.surface.model.SurfaceDefDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceName
+import camp.delta.deltatypetheory.core.surface.model.SurfaceNameRef
+import camp.delta.deltatypetheory.core.surface.model.SurfacePi
+import camp.delta.deltatypetheory.core.surface.model.SurfaceProgram
+import camp.delta.deltatypetheory.core.surface.model.SurfaceTypeTerm
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+class StubSurfaceTypeCheckerTest {
+    @Test
+    fun `reports a reference that collides with an earlier global name`() {
+        val result =
+            StubSurfaceTypeChecker()
+                .check(
+                    SurfaceProgram(
+                        listOf(
+                            axiom("Nat", SurfaceTypeTerm),
+                            axiom("zero", SurfaceNameRef(name("Nat"))),
+                        ),
+                        "natural.delta",
+                    ),
+                )
+
+        // The stub does not resolve references; it only reports a reference once its name
+        // collides with a previously registered name.
+        assertEquals(1, result.diagnostics.size)
+        assertEquals("Name Nat already used globally", result.diagnostics.single().message)
+    }
+
+    @Test
+    fun `reports duplicate global declarations`() {
+        val result =
+            StubSurfaceTypeChecker()
+                .check(
+                    SurfaceProgram(
+                        listOf(
+                            axiom("Nat", SurfaceTypeTerm),
+                            axiom("Nat", SurfaceTypeTerm),
+                        ),
+                        null,
+                    ),
+                )
+
+        assertEquals(
+            listOf("Name Nat already used for another axiom"),
+            result.diagnostics.map { it.message },
+        )
+        assertTrue(
+            result.diagnostics.all { it.severity == SurfaceDiagnosticSeverity.Error },
+        )
+    }
+
+    @Test
+    fun `traverses both a definition type and value including applications`() {
+        val result =
+            StubSurfaceTypeChecker()
+                .check(
+                    SurfaceProgram(
+                        listOf(
+                            axiom("A", SurfaceTypeTerm),
+                            SurfaceDefDecl(
+                                name("f"),
+                                SurfaceNameRef(name("A")),
+                                SurfaceApp(
+                                    SurfaceNameRef(name("A")),
+                                    SurfaceTypeTerm,
+                                ),
+                                null,
+                            ),
+                        ),
+                        null,
+                    ),
+                )
+
+        assertEquals(
+            listOf("Name A already used globally", "Name A already used globally"),
+            result.diagnostics.map { it.message },
+        )
+    }
+
+    @Test
+    fun `reports a binder that collides with a global declaration`() {
+        val result =
+            StubSurfaceTypeChecker()
+                .check(
+                    SurfaceProgram(
+                        listOf(
+                            axiom("A", SurfaceTypeTerm),
+                            axiom(
+                                "idType",
+                                SurfacePi(
+                                    SurfaceBinder(
+                                        name("A"),
+                                        SurfaceTypeTerm,
+                                    ),
+                                    SurfaceTypeTerm,
+                                ),
+                            ),
+                        ),
+                        null,
+                    ),
+                )
+
+        assertEquals(
+            listOf("Name A already used globally"),
+            result.diagnostics.map { it.message },
+        )
+    }
+
+    private fun axiom(
+        name: String,
+        type: camp.delta.deltatypetheory.core.surface.model.SurfaceTerm,
+    ) = SurfaceAxiomDecl(this.name(name), type, null)
+
+    private fun name(value: String) = SurfaceName(value)
+}
