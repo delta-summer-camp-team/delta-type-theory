@@ -716,7 +716,7 @@ graph LR
 - **AC:** ОНО РАБОТАЕТ! 
 
 ---
-### C9: Rules added to a registry
+### C9: Put the rules into a dict
 
 - **Name:** 
 - **Scope:** plugin
@@ -729,4 +729,6 @@ graph LR
     - rules should be of the form `rule expression ::= expression ;`
 - **Acceptance criteria:** grammar and syntax updated to support rules
 
-### C10: 
+### C10: Reduce the rules using a 
+- **Name**
+### C11: re
