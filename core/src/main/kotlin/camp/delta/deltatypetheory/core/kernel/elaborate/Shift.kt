@@ -9,13 +9,16 @@ import camp.delta.deltatypetheory.core.kernel.model.Lambda
 import camp.delta.deltatypetheory.core.kernel.model.Pi
 import camp.delta.deltatypetheory.core.kernel.model.TypeTerm
 
-/** Renumbers free variables. */
+/**
+ * Renumbers free variables by [amount].
+ * [cutoff] = binders descended so far; indices below it are bound inside
+ * this term and stay put. Callers start at 0.
+ */
 internal fun CoreTerm.shift(amount: Int, cutoff: Int = 0): CoreTerm = when (this) {
 
-  // below cutoff: bound here
   is BoundVar -> if (index >= cutoff) BoundVar(index + amount) else this
 
-  // body only
+  // A binder scopes over its body, not its parameter type.
   is Lambda -> Lambda(parameterType.shift(amount, cutoff), body.shift(amount, cutoff + 1))
   is Pi -> Pi(parameterType.shift(amount, cutoff), body.shift(amount, cutoff + 1))
 
@@ -24,5 +27,5 @@ internal fun CoreTerm.shift(amount: Int, cutoff: Int = 0): CoreTerm = when (this
   TypeTerm -> this
   is GlobalRef -> this
 
-  is GlobalName -> this // TODO: not a term
+  is GlobalName -> this
 }
