@@ -364,6 +364,19 @@ graph LR
 
 ---
 
+### P11: Add rule lexing & parsing
+- **Name:** Add rule lexing & parsing
+- **Scope:** plugin
+- **Milestone:** M4
+- **Task:** Add parsing of rules and store them inside the PSI tree.
+- **Goal:** Add "DeltaTP File" to the New menu so users can create `.delta` files easily.
+- **Details:**
+    - lex `rule` as a new Token
+    - output a new syntax tree for rule
+    - rules should be of the form `rule Identifier: expression ::= expression;`
+- **Acceptance criteria:** grammar and syntax updated to support rules
+---
+
 ## Команда Surface
 
 --- 
@@ -482,7 +495,6 @@ graph LR
 - **Задача:** Использовать правильный тайпчекер.
 - **Подробности:** их нет
 - **AC:** Все диагностики, которые тайпчекер выдаёт правильно отображаются в IDE.
-
 
 ## Команда Core
 
@@ -702,3 +714,19 @@ graph LR
   - `elaborateAxiom` и `elaborateDef` ничего не должны возвращать, только использовать `diagnosticReporter`, и функции проверки терма у `termElaborator`. `fun check(program: SurfaceProgram): SurfaceCheckResult` возвращает, по сути, коллекцию репортов.
   - Функции `elaborate...` берут `SurfaceDecl` нужного типа (аксиому или дефиницию), проверяют, что глобальное имя не повторяется, вызывают нужные checkType. И, если всё хорошо, добавляют правильный `GlobalBinding` в `context`.
 - **AC:** ОНО РАБОТАЕТ! 
+
+---
+### C9: Rules added to a registry
+
+- **Name:** 
+- **Scope:** plugin
+- **Milestone:** M4
+- **Task:** Add parsing of rules and store them inside the PSI tree.
+- **Goal:** Add "DeltaTP File" to the New menu so users can create `.delta` files easily.
+- **Details:**
+    - lex `rule` as a new Token
+    - output a new syntax tree for rule
+    - rules should be of the form `rule expression ::= expression ;`
+- **Acceptance criteria:** grammar and syntax updated to support rules
+
+### C10: 
