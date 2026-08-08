@@ -6,6 +6,7 @@ import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryType
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryAxiomDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryDefDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryExpr
+import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryItem
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryApplication
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryAtom
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryLambdaExpr
@@ -36,13 +37,8 @@ class PsiToSurfaceConverter {
 
 
     private fun collectTopLevelDeclarations(file: PsiFile): List<PsiElement> {
-        return file.children.filter { element ->
-            when (element.node?.elementType) {
-                DeltaTypeTheoryType.AXIOM_DECL,
-                DeltaTypeTheoryType.DEF_DECL -> true
-
-                else -> false
-            }
+        return file.children.filterIsInstance<DeltaTypeTheoryItem>().mapNotNull { item ->
+            item.axiomDecl ?: item.defDecl
         }
     }
 

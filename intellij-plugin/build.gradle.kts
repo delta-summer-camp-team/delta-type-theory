@@ -1,3 +1,4 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -20,6 +21,8 @@ dependencies {
     intellijIdea("2026.1.1")
     bundledPlugin("com.intellij.java")
 
+    testFramework(TestFrameworkType.Platform)
+
     pluginVerifier()
     zipSigner()
   }
@@ -27,7 +30,7 @@ dependencies {
   implementation(project(":core"))
   implementation(kotlin("stdlib"))
 
-  testImplementation(kotlin("test"))
+  testImplementation("junit:junit:4.13.2")
 }
 
 java {
@@ -72,10 +75,6 @@ tasks {
 
   compileKotlin {
   dependsOn(generateLexer, generateParser)
-  }
-
-  test {
-    useJUnitPlatform()
   }
 
   patchPluginXml {

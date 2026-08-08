@@ -5,13 +5,10 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceName
 import camp.delta.deltatypetheory.core.surface.model.SurfaceProgram
 import camp.delta.deltatypetheory.core.surface.model.SurfaceTypeTerm
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
-    @Test
-    fun `converts axiom Nat Type`() {
+    fun testConvertsAxiomNatType() {
         val file =
             myFixture.configureByText(
                 "test.delta",
@@ -36,8 +33,7 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
             result,
         )
     }
-    @Test
-    fun `preserves declaration order`() {
+    fun testPreservesDeclarationOrder() {
         val file = myFixture.configureByText(
             "test.delta",
             """
@@ -69,8 +65,7 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         )
     }
 
-    @Test
-    fun `converts name reference`() {
+    fun testConvertsNameReference() {
         val file = myFixture.configureByText(
             "test.delta",
             "axiom Nat : Nat;"
