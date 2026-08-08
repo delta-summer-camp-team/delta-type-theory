@@ -1,5 +1,6 @@
 package camp.delta.deltatypetheory.core.kernel.reduction
 
+import camp.delta.deltatypetheory.core.kernel.elaborate.ElaborationContext
 import camp.delta.deltatypetheory.core.kernel.elaborate.shift
 import camp.delta.deltatypetheory.core.kernel.model.App
 import camp.delta.deltatypetheory.core.kernel.model.BoundVar
@@ -9,7 +10,6 @@ import camp.delta.deltatypetheory.core.kernel.model.GlobalRef
 import camp.delta.deltatypetheory.core.kernel.model.Lambda
 import camp.delta.deltatypetheory.core.kernel.model.Pi
 import camp.delta.deltatypetheory.core.kernel.model.TypeTerm
-import camp.delta.deltatypetheory.core.surface.elaborate.ElaborationContext
 
 /**
  * Крюк вместо ElaborationContext: по имени глобала возвращает его значение.
