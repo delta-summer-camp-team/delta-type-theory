@@ -37,4 +37,9 @@
         />
     </extensions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <typedHandler
+                implementation="camp.delta.deltatypetheory.plugin.DeltaTypeTheoryUnicodeInputHandler"/>
+    </extensions>
+
 </idea-plugin>
