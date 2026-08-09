@@ -28,19 +28,12 @@ IDENTIFIER    = [a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*
 
       "axiom"      { return DeltaTypeTheoryType.AXIOM_KEYWORD; }
       "def"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
-      "theorem"    { return DeltaTypeTheoryType.DEF_KEYWORD; }
-      "fun"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
       ":="         { return DeltaTypeTheoryType.EQUAL; }
       "=>"         { return DeltaTypeTheoryType.FOLLOWS; }
-      "rule"       { return DeltaTypeTheoryType.RULE_KEYWORD; }
-      "↦"          { return DeltaTypeTheoryType.RULE_ARROW; }
-      "→"          { return DeltaTypeTheoryType.TO; }
       "->"         { return DeltaTypeTheoryType.TO; }
-      "→"          { return DeltaTypeTheoryType.TO; }
       "λ"          { return DeltaTypeTheoryType.LAMBDA; }
       ";"          { return DeltaTypeTheoryType.SEMICOLON; }
       ":"          { return DeltaTypeTheoryType.COLON; }
-      "."          { return DeltaTypeTheoryType.DOT; }
       "("          { return DeltaTypeTheoryType.LPAREN; }
       ")"          { return DeltaTypeTheoryType.RPAREN; }
       {IDENTIFIER} { return DeltaTypeTheoryType.IDENTIFIER; }
