@@ -56,7 +56,7 @@ class TermElaborator(
 
         is SurfaceMeta -> {
             // TODO(M5): resolving metas is C10's job; surface-level output only.
-            diagnosticReporter.reportError("Unresolved meta ?${term.number}", null)
+            diagnosticReporter.reportError("Unresolved meta ?${term.id}", null)
             null
         }
 
@@ -114,8 +114,6 @@ class TermElaborator(
             val resultType = substituteTop(functionType.body, argument)
             TypedCoreTerm(App(function.term, argument), resultType)
         }
-
-        else -> { return null }
     }
 
     private fun checkLambdaAgainstPi(
