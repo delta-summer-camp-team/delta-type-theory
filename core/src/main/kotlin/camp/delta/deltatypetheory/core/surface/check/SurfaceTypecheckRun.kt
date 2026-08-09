@@ -1,6 +1,11 @@
 package camp.delta.deltatypetheory.core.surface.check
 
 import camp.delta.deltatypetheory.core.kernel.elaborate.ElaborationContext
+import camp.delta.deltatypetheory.core.kernel.elaborate.LocalContext
+import camp.delta.deltatypetheory.core.kernel.load.GlobalBinding
+import camp.delta.deltatypetheory.core.kernel.model.CoreTerm
+import camp.delta.deltatypetheory.core.kernel.model.GlobalName
+import camp.delta.deltatypetheory.core.kernel.model.TypeTerm
 import camp.delta.deltatypetheory.core.surface.diagnostic.DiagnosticReporter
 import camp.delta.deltatypetheory.core.surface.model.SurfaceAxiomDecl
 import camp.delta.deltatypetheory.core.surface.model.SurfaceDefDecl
@@ -27,9 +32,25 @@ class SurfaceTypecheckRun {
         return SurfaceCheckResult(diagnosticReporter.all())
     }
 
-    private fun elaborateAxiom(decl: SurfaceAxiomDecl) {
+    private fun elaborateAxiom(declaration: SurfaceAxiomDecl) {
+        val name = declaration.name.value
+        if (elaborationContext.lookupGlobal(name) != null) {
+            diagnosticReporter.reportError("Name '$name' already declared", declaration.range)
+            return
+        }
+        val type = termElaborator.checkTerm(declaration.type, TypeTerm, LocalContext()) ?: return
+        elaborationContext.addGlobal(GlobalBinding(GlobalName(name), type, null))
     }
 
-    private fun elaborateDef(decl: SurfaceDefDecl) {
+    private fun elaborateDef(declaration: SurfaceDefDecl) {
+        val name = declaration.name.value
+        if (elaborationContext.lookupGlobal(name) != null) {
+            diagnosticReporter.reportError("Name '$name' already declared", declaration.range)
+            return
+        }
+        val type: CoreTerm = termElaborator.checkTerm(declaration.type, TypeTerm, LocalContext())
+            ?: return
+        val value = termElaborator.checkTerm(declaration.value, type, LocalContext()) ?: return
+        elaborationContext.addGlobal(GlobalBinding(GlobalName(name), type, value))
     }
 }
