@@ -1,6 +1,6 @@
 package camp.delta.deltatypetheory.core.surface.check
 
-import camp.delta.deltatypetheory.core.kernel.model.ElaborationContext
+import camp.delta.deltatypetheory.core.kernel.elaborate.ElaborationContext
 import camp.delta.deltatypetheory.core.surface.diagnostic.DiagnosticReporter
 import camp.delta.deltatypetheory.core.surface.model.SurfaceAxiomDecl
 import camp.delta.deltatypetheory.core.surface.model.SurfaceDefDecl
