@@ -65,13 +65,17 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
                 }
             }
             is SurfaceTypeTerm -> {}
-            else -> {}
+            is SurfaceMeta -> {}
         }
     }
 
     private fun checkBinder(binder: SurfaceBinder) {
         val name = binder.name
         var pushed = false
+        if (name == null) {
+            checkTerm(binder.type)
+            return
+        }
         if (name in usedGlobalNames) {
             reporter.reportError("Name ${name.value} already used globally", null)
         } else if (name in usedLocalNames) {
