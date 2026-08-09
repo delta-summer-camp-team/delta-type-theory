@@ -9,7 +9,11 @@ import camp.delta.deltatypetheory.core.kernel.model.GlobalRef
 import camp.delta.deltatypetheory.core.kernel.model.Lambda
 import camp.delta.deltatypetheory.core.kernel.model.Pi
 import camp.delta.deltatypetheory.core.kernel.model.TypeTerm
-import camp.delta.deltatypetheory.core.surface.elaborate.ElaborationContext
+import camp.delta.deltatypetheory.core.kernel.elaborate.ElaborationContext
+import camp.delta.deltatypetheory.core.kernel.reduction.GlobalResolver
+import camp.delta.deltatypetheory.core.kernel.reduction.definitionallyEqual
+import camp.delta.deltatypetheory.core.kernel.reduction.normalize
+import camp.delta.deltatypetheory.core.kernel.reduction.whnf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
