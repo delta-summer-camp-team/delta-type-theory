@@ -24,3 +24,7 @@ data object SurfaceTypeTerm : SurfaceTerm
 data class SurfaceNameRef(
     val name: SurfaceName,
 ) : SurfaceTerm
+
+data class SurfaceMeta(
+    val id: Int,
+) : SurfaceTerm
