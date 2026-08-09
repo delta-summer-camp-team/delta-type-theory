@@ -42,11 +42,14 @@ ruleDecl ::= RULE_KEYWORD ruleName COLON expr RULE_ARROW expr SEMICOLON
 
 ruleName ::= IDENTIFIER (DOT IDENTIFIER)*
 
-expr ::= lambdaExpr | piExpr | application | atom
+expr ::= lambdaExpr | piExpr | arrowExpr | application | atom
 
-lambdaExpr ::= LAMBDA LPAREN IDENTIFIER COLON expr RPAREN FOLLOWS expr
+lambdaExpr ::= LAMBDA IDENTIFIER FOLLOWS expr
+             | LAMBDA LPAREN IDENTIFIER COLON expr RPAREN FOLLOWS expr
 
 piExpr ::= LPAREN IDENTIFIER COLON expr RPAREN TO expr
+
+arrowExpr ::= atom argument* TO expr
 
 application ::= atom argument+
 
