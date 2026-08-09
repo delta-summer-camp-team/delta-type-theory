@@ -40,6 +40,10 @@
             language = "DeltaTypeTheory"
             implementationClass = "camp.delta.deltatypetheory.plugin.annotator.DeltaTypeTheoryExternalAnnotator"
         />
+        <lang.syntaxHighlighterFactory
+            language = "DeltaTypeTheory"
+            implementationClass = "camp.delta.deltatypetheory.plugin.highlights.DeltaTypeTheorySyntaxHighlighterFactory"
+        />
 
         <typedHandler
             implementation="camp.delta.deltatypetheory.plugin.DeltaTypeTheoryUnicodeInputHandler"
