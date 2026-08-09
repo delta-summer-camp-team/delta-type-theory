@@ -11,10 +11,11 @@ class DeltaTypeTheoryUnicodeInputHandler : TypedHandlerDelegate () {
     //replacements LaTeX to unicode symbols
     private val replacements = mapOf(
         "\\to" to "→",
-        "\\L" to "λ",
-        "\\mN" to "ℕ",
+        "\\l" to "λ",
+        "\\N" to "ℕ",
         "\\forall" to "∀",
-        "\\exists" to "∃"
+        "\\exists" to "∃",
+
     )
 
     override fun charTyped (
@@ -43,6 +44,13 @@ class DeltaTypeTheoryUnicodeInputHandler : TypedHandlerDelegate () {
 
         //extracts command
         val command = textBeforeCaret.substring(slashIndex).trimEnd()
+
+        if (command == "\\doom") {
+            document.deleteString(slashIndex, caretOffset - 1)
+            DoomMode.activate(editor)
+            return Result.STOP
+        }
+
         //finds replacement if not ends the process
         val replacement = replacements[command] ?: return Result.CONTINUE
 

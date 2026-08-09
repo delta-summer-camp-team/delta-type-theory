@@ -17,8 +17,8 @@ import com.intellij.lexer.FlexLexer;
 %eof}
 
 WHITE_SPACE   = [\ \n\t\r]+
-COMMENT       = "//" [^\r\n]*
-IDENTIFIER    = [a-zA-Z_][a-zA-Z0-9_]*
+COMMENT       = "--" [^\r\n]*
+IDENTIFIER    = [a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*
 
 %%
 
@@ -28,8 +28,11 @@ IDENTIFIER    = [a-zA-Z_][a-zA-Z0-9_]*
 
       "axiom"      { return DeltaTypeTheoryType.AXIOM_KEYWORD; }
       "def"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
+      "theorem"    { return DeltaTypeTheoryType.DEF_KEYWORD; }
+      "fun"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
       ":="         { return DeltaTypeTheoryType.EQUAL; }
       "=>"         { return DeltaTypeTheoryType.FOLLOWS; }
+      "→"          { return DeltaTypeTheoryType.TO; }
       "->"         { return DeltaTypeTheoryType.TO; }
       "λ"          { return DeltaTypeTheoryType.LAMBDA; }
       ";"          { return DeltaTypeTheoryType.SEMICOLON; }

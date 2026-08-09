@@ -52,4 +52,12 @@
 
 
 
+    <!-- bracket highlighter -->
+    <!-- Only the listener is registered as it itself calls the DeltaBracketHighlighter -->
+    <extensions defaultExtensionNs="com.intellij">
+
+        <editorFactoryListener
+                implementation="camp.delta.deltatypetheory.plugin.DeltaEditorListener"/>
+    </extensions>
+
 </idea-plugin>

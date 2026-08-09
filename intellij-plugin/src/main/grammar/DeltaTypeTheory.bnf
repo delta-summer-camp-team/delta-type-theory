@@ -22,8 +22,8 @@ psiImplPackage="camp.delta.deltatypetheory.plugin.psi.impl"
     LPAREN         = '('
     RPAREN         = ')'
     SEMICOLON      = ';'
-    COMMENT        = 'regexp://.*'
-    IDENTIFIER     = 'regexp:[a-zA-Z_][a-zA-Z0-9_]*'
+    COMMENT        = 'regexp:--.*'
+    IDENTIFIER     = 'regexp:[a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*'
   ]
 }
 
