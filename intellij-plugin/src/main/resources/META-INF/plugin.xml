@@ -40,5 +40,9 @@
             language = "DeltaTypeTheory"
             implementationClass = "camp.delta.deltatypetheory.plugin.annotator.DeltaTypeTheoryExternalAnnotator"
         />
+        <lang.syntaxHighlighterFactory
+            language = "DeltaTypeTheory"
+            implementationClass = "camp.delta.deltatypetheory.plugin.highlights.DeltaTypeTheorySyntaxHighlighterFactory"
+        />
     </extensions>
 </idea-plugin>
