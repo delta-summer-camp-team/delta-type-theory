@@ -106,6 +106,8 @@ class TermElaborator(
             val resultType = substituteTop(functionType.body, argument)
             TypedCoreTerm(App(function.term, argument), resultType)
         }
+
+        else -> { return null }
     }
 
     private fun checkLambdaAgainstPi(

@@ -65,6 +65,7 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
                 }
             }
             is SurfaceTypeTerm -> {}
+            else -> {}
         }
     }
 
