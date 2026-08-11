@@ -8,83 +8,176 @@ interface SurfaceTypeChecker {
 }
 
 class StubSurfaceTypeChecker : SurfaceTypeChecker {
-    // TODO make them hashmaps with offset to add lines / offsets to reporter
-    val usedGlobalNames = HashSet<SurfaceName>()
-    val usedLocalNames: ArrayDeque<SurfaceName> = ArrayDeque()
-    val reporter = DiagnosticReporter()
 
     override fun check(program: SurfaceProgram): SurfaceCheckResult {
-        // val fileName = program.fileName
+        val usedGlobalNames = HashSet<SurfaceName>()
+        val usedLocalNames = ArrayDeque<SurfaceName>()
+        val reporter = DiagnosticReporter()
 
         for (declaration in program.declarations) {
-            checkGlobal(declaration)
+            checkGlobal(
+                declaration,
+                usedGlobalNames,
+                usedLocalNames,
+                reporter,
+            )
         }
+
         return SurfaceCheckResult(reporter.all())
     }
 
-    private fun checkGlobal(declaration: SurfaceDecl) {
-        val type =
-                when (declaration) {
-                    is SurfaceDefDecl -> "defintion"
-                    is SurfaceAxiomDecl -> "axiom"
-                }
+    private fun checkGlobal(
+        declaration: SurfaceDecl,
+        usedGlobalNames: HashSet<SurfaceName>,
+        usedLocalNames: ArrayDeque<SurfaceName>,
+        reporter: DiagnosticReporter,
+    ) {
+        val type = when (declaration) {
+            is SurfaceDefDecl -> "definition"
+            is SurfaceAxiomDecl -> "axiom"
+        }
+
         val name = declaration.name
+
         if (name in usedGlobalNames) {
-            reporter.reportError("Name ${name.value} already used for another $type", null)
+            reporter.reportError(
+                "Name ${name.value} already used for another $type",
+                declaration.range,
+            )
         } else {
             usedGlobalNames.add(name)
         }
-        checkTerm(declaration.type)
+
+        checkTerm(
+            declaration.type,
+            usedGlobalNames,
+            usedLocalNames,
+            reporter,
+        )
+
         if (declaration is SurfaceDefDecl) {
-            checkTerm(declaration.value)
+            checkTerm(
+                declaration.value,
+                usedGlobalNames,
+                usedLocalNames,
+                reporter,
+            )
         }
     }
 
-    private fun checkTerm(term: SurfaceTerm) {
+    private fun checkTerm(
+        term: SurfaceTerm,
+        usedGlobalNames: HashSet<SurfaceName>,
+        usedLocalNames: ArrayDeque<SurfaceName>,
+        reporter: DiagnosticReporter,
+    ) {
         when (term) {
             is SurfacePi -> {
-                checkBinder(term.binder)
-                checkTerm(term.body)
+                checkBinder(
+                    term.binder,
+                    usedGlobalNames,
+                    usedLocalNames,
+                    reporter,
+                )
+                checkTerm(
+                    term.body,
+                    usedGlobalNames,
+                    usedLocalNames,
+                    reporter,
+                )
             }
+
             is SurfaceLambda -> {
-                checkBinder(term.binder)
-                checkTerm(term.body)
+                checkBinder(
+                    term.binder,
+                    usedGlobalNames,
+                    usedLocalNames,
+                    reporter,
+                )
+                checkTerm(
+                    term.body,
+                    usedGlobalNames,
+                    usedLocalNames,
+                    reporter,
+                )
             }
+
             is SurfaceApp -> {
-                checkTerm(term.function)
-                checkTerm(term.argument)
+                checkTerm(
+                    term.function,
+                    usedGlobalNames,
+                    usedLocalNames,
+                    reporter,
+                )
+                checkTerm(
+                    term.argument,
+                    usedGlobalNames,
+                    usedLocalNames,
+                    reporter,
+                )
             }
+
             is SurfaceNameRef -> {
                 if (term.name in usedGlobalNames) {
-                    reporter.reportError("Name ${term.name.value} already used globally", null)
+                    reporter.reportError(
+                        "Name ${term.name.value} already used globally",
+                        null,
+                    )
                 } else if (term.name in usedLocalNames) {
                     reporter.reportError(
-                            "Name ${term.name.value} already used in a outer binder",
-                            null,
+                        "Name ${term.name.value} already used in an outer binder",
+                        null,
                     )
                 }
             }
-            is SurfaceTypeTerm -> {}
-            is SurfaceMeta -> {}
+
+            is SurfaceTypeTerm -> Unit
+            is SurfaceMeta -> Unit
         }
     }
 
-    private fun checkBinder(binder: SurfaceBinder) {
+    private fun checkBinder(
+        binder: SurfaceBinder,
+        usedGlobalNames: HashSet<SurfaceName>,
+        usedLocalNames: ArrayDeque<SurfaceName>,
+        reporter: DiagnosticReporter,
+    ) {
         val name = binder.name
-        var pushed = false
+
         if (name == null) {
-            checkTerm(binder.type)
+            checkTerm(
+                binder.type,
+                usedGlobalNames,
+                usedLocalNames,
+                reporter,
+            )
             return
         }
+
+        var pushed = false
+
         if (name in usedGlobalNames) {
-            reporter.reportError("Name ${name.value} already used globally", null)
+            reporter.reportError(
+                "Name ${name.value} already used globally",
+                null,
+            )
         } else if (name in usedLocalNames) {
-            reporter.reportError("Name ${name.value} already used in a outer binder", null)
+            reporter.reportError(
+                "Name ${name.value} already used in an outer binder",
+                null,
+            )
         } else {
             usedLocalNames.addLast(name)
             pushed = true
         }
-        checkTerm(binder.type)
+
+        checkTerm(
+            binder.type,
+            usedGlobalNames,
+            usedLocalNames,
+            reporter,
+        )
+
         if (pushed) {
             if (usedLocalNames.last() != name) {
                 error("Top Stack variable does not coincide with the current binder")

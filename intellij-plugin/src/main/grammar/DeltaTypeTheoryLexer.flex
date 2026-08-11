@@ -28,9 +28,13 @@ IDENTIFIER    = [a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*
 
       "axiom"      { return DeltaTypeTheoryType.AXIOM_KEYWORD; }
       "def"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
+      "fun"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
       ":="         { return DeltaTypeTheoryType.EQUAL; }
       "=>"         { return DeltaTypeTheoryType.FOLLOWS; }
       "->"         { return DeltaTypeTheoryType.TO; }
+      "→"          { return DeltaTypeTheoryType.TO; }
+      "rule"       { return DeltaTypeTheoryType.RULE_KEYWORD; }
+      "↦"          { return DeltaTypeTheoryType.RULE_ARROW; }
       "λ"          { return DeltaTypeTheoryType.LAMBDA; }
       ";"          { return DeltaTypeTheoryType.SEMICOLON; }
       ":"          { return DeltaTypeTheoryType.COLON; }
