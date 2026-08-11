@@ -93,86 +93,6 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         )
     }
 
-    fun testConvertsRule() {
-        val file = myFixture.configureByText(
-            "test.delta",
-            "rule beta: x ↦ x;"
-        )
-
-        val result = PsiToSurfaceConverter().convert(file)
-
-        assertEquals(1, result.rules.size)
-
-        assertEquals(
-            SurfaceRuleDecl(
-                name = SurfaceName("beta"),
-                lhs = SurfaceNameRef(
-                    SurfaceName("x")
-                ),
-                rhs = SurfaceNameRef(
-                    SurfaceName("x")
-                ),
-                range = null,
-            ),
-            result.rules.single(),
-        )
-    }
-
-    fun testParsesNatRecRule() {
-        val file = myFixture.configureByText(
-            "test.delta",
-            "rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;"
-        )
-
-        val result = PsiToSurfaceConverter().convert(file)
-
-        assertEquals(1, result.rules.size)
-        assertEquals(
-            SurfaceName("natRec.zero"),
-            result.rules.single().name,
-        )
-    }
-
-    fun testPreservesAllRules() {
-        val file = myFixture.configureByText(
-            "test.delta",
-            """
-        rule beta: x ↦ x;
-        rule gamma: y ↦ y;
-        """.trimIndent()
-        )
-
-        val result = PsiToSurfaceConverter().convert(file)
-
-        assertEquals(2, result.rules.size)
-        assertEquals(SurfaceName("beta"), result.rules[0].name)
-        assertEquals(SurfaceName("gamma"), result.rules[1].name)
-    }
-
-    fun testConvertsNatRecRules() {
-        val file = myFixture.configureByText(
-            "test.delta",
-            """
-        rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;
-        rule natRec.succ: natRec(P)(z)(s)(succ(n)) ↦ s(n)(natRec(P)(z)(s)(n));
-        """.trimIndent()
-        )
-
-        val result = PsiToSurfaceConverter().convert(file)
-
-        assertEquals(2, result.rules.size)
-
-        assertEquals(
-            SurfaceName("natRec.zero"),
-            result.rules[0].name,
-        )
-
-        assertEquals(
-            SurfaceName("natRec.succ"),
-            result.rules[1].name,
-        )
-    }
-
     fun testConvertsArrowTypeToAnonymousBinder() {
         val file = myFixture.configureByText(
             "test.delta",
@@ -274,6 +194,86 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         assertEquals(
             SurfaceMeta(1),
             (defB.value as SurfaceLambda).binder.type,
+        )
+    }
+
+    fun testConvertsRule() {
+        val file = myFixture.configureByText(
+            "test.delta",
+            "rule beta: x ↦ x;"
+        )
+
+        val result = PsiToSurfaceConverter().convert(file)
+
+        assertEquals(1, result.rules.size)
+
+        assertEquals(
+            SurfaceRuleDecl(
+                name = SurfaceName("beta"),
+                lhs = SurfaceNameRef(
+                    SurfaceName("x")
+                ),
+                rhs = SurfaceNameRef(
+                    SurfaceName("x")
+                ),
+                range = null,
+            ),
+            result.rules.single(),
+        )
+    }
+
+    fun testParsesNatRecRule() {
+        val file = myFixture.configureByText(
+            "test.delta",
+            "rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;"
+        )
+
+        val result = PsiToSurfaceConverter().convert(file)
+
+        assertEquals(1, result.rules.size)
+        assertEquals(
+            SurfaceName("natRec.zero"),
+            result.rules.single().name,
+        )
+    }
+
+    fun testPreservesAllRules() {
+        val file = myFixture.configureByText(
+            "test.delta",
+            """
+        rule beta: x ↦ x;
+        rule gamma: y ↦ y;
+        """.trimIndent()
+        )
+
+        val result = PsiToSurfaceConverter().convert(file)
+
+        assertEquals(2, result.rules.size)
+        assertEquals(SurfaceName("beta"), result.rules[0].name)
+        assertEquals(SurfaceName("gamma"), result.rules[1].name)
+    }
+
+    fun testConvertsNatRecRules() {
+        val file = myFixture.configureByText(
+            "test.delta",
+            """
+        rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;
+        rule natRec.succ: natRec(P)(z)(s)(succ(n)) ↦ s(n)(natRec(P)(z)(s)(n));
+        """.trimIndent()
+        )
+
+        val result = PsiToSurfaceConverter().convert(file)
+
+        assertEquals(2, result.rules.size)
+
+        assertEquals(
+            SurfaceName("natRec.zero"),
+            result.rules[0].name,
+        )
+
+        assertEquals(
+            SurfaceName("natRec.succ"),
+            result.rules[1].name,
         )
     }
 }
