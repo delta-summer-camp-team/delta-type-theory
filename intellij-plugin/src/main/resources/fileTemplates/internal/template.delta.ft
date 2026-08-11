@@ -1,0 +1,10 @@
+axiom natRec :
+    (P : (n : Nat) -> Type) ->
+    (_ : P(zero)) ->
+    (s : (n : Nat) -> (ih : P(n)) -> P(succ(n))) ->
+    (n : Nat) ->
+    P(n);
+
+//определяет рекурсию на натуральных числах, одну из основ теории типов
+//defines natural number recursion, one of the fundamentals of Type Theory
+//definiert die Rekursion über natürliche Zahlen, eine der Grundlagen der Typentheorie

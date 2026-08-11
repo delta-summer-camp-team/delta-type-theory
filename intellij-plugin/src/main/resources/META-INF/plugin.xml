@@ -45,4 +45,7 @@
             implementationClass = "camp.delta.deltatypetheory.plugin.highlights.DeltaTypeTheorySyntaxHighlighterFactory"
         />
     </extensions>
+    <actions>
+        <add-to-group/>
+    </actions>
 </idea-plugin>
