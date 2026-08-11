@@ -30,7 +30,11 @@ class SurfaceTypecheckRunTest {
       SurfaceNameRef(name("Nat")),
     )
     val succ = SurfaceAxiomDecl(name("succ"), succType, null)
-    return SurfaceProgram(listOf(nat, zero, succ) + extra, null)
+    return SurfaceProgram(
+      declarations = listOf(nat, zero, succ) + extra,
+      rules = emptyList(),
+      fileName = null,
+    )
   }
 
   @Test
@@ -51,7 +55,11 @@ class SurfaceTypecheckRunTest {
       ),
       null,
     )
-    val program = SurfaceProgram(natProgram().declarations + two, null)
+    val program = SurfaceProgram(
+      declarations = natProgram().declarations + two,
+      rules = emptyList(),
+      fileName = null,
+    )
     val result = SurfaceTypeCheckerImpl.check(program)
     assertFalse(result.diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error })
   }
@@ -65,7 +73,11 @@ class SurfaceTypecheckRunTest {
       SurfaceNameRef(name("zero")),
       null,
     )
-    val program = SurfaceProgram(natProgram().declarations + bad, null)
+    val program = SurfaceProgram(
+      declarations = natProgram().declarations + bad,
+      rules = emptyList(),
+      fileName = null,
+    )
     val result = SurfaceTypeCheckerImpl.check(program)
     assertTrue(result.diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error })
   }
@@ -73,7 +85,11 @@ class SurfaceTypecheckRunTest {
   @Test
   fun duplicateNameIsRejected() {
     val dup = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm, null)
-    val program = SurfaceProgram(natProgram().declarations + dup, null)
+    val program = SurfaceProgram(
+      declarations = natProgram().declarations + dup,
+      rules = emptyList(),
+      fileName = null,
+    )
     val result = SurfaceTypeCheckerImpl.check(program)
     assertTrue(result.diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error })
   }
@@ -82,7 +98,11 @@ class SurfaceTypecheckRunTest {
   fun unknownNameIsRejected() {
     // axiom weird : Nat; -- Nat известен, но возьмём неизвестный тип
     val weird = SurfaceAxiomDecl(name("weird"), SurfaceNameRef(name("Unknown")), null)
-    val program = SurfaceProgram(natProgram().declarations + weird, null)
+    val program = SurfaceProgram(
+      declarations = natProgram().declarations + weird,
+      rules = emptyList(),
+      fileName = null,
+    )
     val result = SurfaceTypeCheckerImpl.check(program)
     assertTrue(result.diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error })
   }
