@@ -1,7 +1,7 @@
 package camp.delta.deltatypetheory.core.surface.model
 
 data class SurfaceBinder(
-    val name: SurfaceName,
+    val name: SurfaceName?,
     val type: SurfaceTerm,
     val range: SourceRange? = null,
 )

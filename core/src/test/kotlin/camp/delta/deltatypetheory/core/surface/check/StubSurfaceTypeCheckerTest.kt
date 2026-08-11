@@ -21,11 +21,12 @@ class StubSurfaceTypeCheckerTest {
             StubSurfaceTypeChecker()
                 .check(
                     SurfaceProgram(
-                        listOf(
+                        declarations = listOf(
                             axiom("Nat", SurfaceTypeTerm),
                             axiom("zero", SurfaceNameRef(name("Nat"))),
                         ),
-                        "natural.delta",
+                        rules = emptyList(),
+                        fileName = "natural.delta",
                     ),
                 )
 
@@ -41,11 +42,12 @@ class StubSurfaceTypeCheckerTest {
             StubSurfaceTypeChecker()
                 .check(
                     SurfaceProgram(
-                        listOf(
+                        declarations = listOf(
                             axiom("Nat", SurfaceTypeTerm),
                             axiom("Nat", SurfaceTypeTerm),
                         ),
-                        null,
+                        rules = emptyList(),
+                        fileName = null,
                     ),
                 )
 
@@ -64,7 +66,7 @@ class StubSurfaceTypeCheckerTest {
             StubSurfaceTypeChecker()
                 .check(
                     SurfaceProgram(
-                        listOf(
+                        declarations = listOf(
                             axiom("A", SurfaceTypeTerm),
                             SurfaceDefDecl(
                                 name("f"),
@@ -76,7 +78,8 @@ class StubSurfaceTypeCheckerTest {
                                 null,
                             ),
                         ),
-                        null,
+                        rules = emptyList(),
+                        fileName = null,
                     ),
                 )
 
@@ -92,7 +95,7 @@ class StubSurfaceTypeCheckerTest {
             StubSurfaceTypeChecker()
                 .check(
                     SurfaceProgram(
-                        listOf(
+                        declarations = listOf(
                             axiom("A", SurfaceTypeTerm),
                             axiom(
                                 "idType",
@@ -105,7 +108,8 @@ class StubSurfaceTypeCheckerTest {
                                 ),
                             ),
                         ),
-                        null,
+                        rules = emptyList(),
+                        fileName = null,
                     ),
                 )
 

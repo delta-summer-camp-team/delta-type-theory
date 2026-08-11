@@ -36,6 +36,7 @@ IDENTIFIER    = [a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*
       "↦"          { return DeltaTypeTheoryType.RULE_ARROW; }
       "→"          { return DeltaTypeTheoryType.TO; }
       "->"         { return DeltaTypeTheoryType.TO; }
+      "→"          { return DeltaTypeTheoryType.TO; }
       "λ"          { return DeltaTypeTheoryType.LAMBDA; }
       ";"          { return DeltaTypeTheoryType.SEMICOLON; }
       ":"          { return DeltaTypeTheoryType.COLON; }

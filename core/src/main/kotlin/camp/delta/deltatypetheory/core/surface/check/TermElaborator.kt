@@ -15,7 +15,9 @@ import camp.delta.deltatypetheory.core.kernel.reduction.substituteTop
 import camp.delta.deltatypetheory.core.kernel.reduction.whnf
 import camp.delta.deltatypetheory.core.surface.diagnostic.DiagnosticReporter
 import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
+import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
 import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
+import camp.delta.deltatypetheory.core.surface.model.SurfaceMeta
 import camp.delta.deltatypetheory.core.surface.model.SurfaceNameRef
 import camp.delta.deltatypetheory.core.surface.model.SurfacePi
 import camp.delta.deltatypetheory.core.surface.model.SurfaceTerm
@@ -52,6 +54,12 @@ class TermElaborator(
     fun inferTerm(term: SurfaceTerm, localContext: LocalContext): TypedCoreTerm? = when (term) {
         is SurfaceTypeTerm -> TypedCoreTerm(TypeTerm, TypeTerm)
 
+        is SurfaceMeta -> {
+            // TODO(M5): resolving metas is C10's job; surface-level output only.
+            diagnosticReporter.reportError("Unresolved meta ?${term.id}", null)
+            null
+        }
+
         is SurfaceNameRef -> {
             val name = term.name.value
             val local = localContext.resolve(name)
@@ -74,7 +82,7 @@ class TermElaborator(
                 diagnosticReporter.reportError("Expected Type for Pi parameter type", null)
                 return null
             }
-            val extended = localContext.push(term.binder.name.value, typeA.term)
+            val extended = localContext.push(binderName(term.binder), typeA.term)
             val typeB = inferTerm(term.body, extended) ?: return null
             if (!definitionallyEqual(typeB.type, TypeTerm, elaborationContext)) {
                 diagnosticReporter.reportError("Expected Type for Pi body type", null)
@@ -89,7 +97,7 @@ class TermElaborator(
                 diagnosticReporter.reportError("Expected Type for Lambda parameter type", null)
                 return null
             }
-            val extended = localContext.push(term.binder.name.value, typeA.term)
+            val extended = localContext.push(binderName(term.binder), typeA.term)
             val body = inferTerm(term.body, extended) ?: return null
             TypedCoreTerm(Lambda(typeA.term, body.term), Pi(typeA.term, body.type))
         }
@@ -106,8 +114,6 @@ class TermElaborator(
             val resultType = substituteTop(functionType.body, argument)
             TypedCoreTerm(App(function.term, argument), resultType)
         }
-
-        else -> { return null }
     }
 
     private fun checkLambdaAgainstPi(
@@ -127,8 +133,10 @@ class TermElaborator(
             )
             return null
         }
-        val extended = localContext.push(term.binder.name.value, typeA.term)
+        val extended = localContext.push(binderName(term.binder), typeA.term)
         val body = checkTerm(term.body, expectedType.body, extended) ?: return null
         return Lambda(typeA.term, body)
     }
+
+    private fun binderName(binder: SurfaceBinder): String = binder.name?.value ?: "_"
 }

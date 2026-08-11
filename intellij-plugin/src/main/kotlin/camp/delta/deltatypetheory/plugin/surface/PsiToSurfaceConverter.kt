@@ -8,6 +8,7 @@ import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryDefDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryExpr
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryItem
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryApplication
+import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryArrowExpr
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryAtom
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryLambdaExpr
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryPiExpr
@@ -22,11 +23,14 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceNameRef
 import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
 import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
 import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
+import camp.delta.deltatypetheory.core.surface.model.SurfaceMeta
 import camp.delta.deltatypetheory.core.surface.model.SurfacePi
 import camp.delta.deltatypetheory.core.surface.model.SurfaceRuleDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryRuleDecl
 
 class PsiToSurfaceConverter {
+
+    private var nextMetaNumber = 0
 
     fun convert(file: PsiFile): SurfaceProgram {
         val declarations = collectTopLevelDeclarations(file)
@@ -147,6 +151,10 @@ class PsiToSurfaceConverter {
             return convertPi(it)
         }
 
+        expr.arrowExpr?.let {
+            return convertArrowExpr(it)
+        }
+
         error("Unknown expression: ${element.text}")
     }
 
@@ -194,18 +202,47 @@ class PsiToSurfaceConverter {
 
         val expressions = element.exprList
 
-        require(expressions.size == 2) {
-            "Expected 2 expressions in lambda, but got ${expressions.size}"
+        require(expressions.size in 1..2) {
+            "Expected 1 or 2 expressions in lambda, but got ${expressions.size}"
         }
 
-        val binder = SurfaceBinder(
-            name = SurfaceName(element.identifier.text),
-            type = convertExpr(expressions[0])
-        )
+        val binder = if (expressions.size == 2) {
+            SurfaceBinder(
+                name = SurfaceName(element.identifier.text),
+                type = convertExpr(expressions[0])
+            )
+        } else {
+            SurfaceBinder(
+                name = SurfaceName(element.identifier.text),
+                type = SurfaceMeta(nextMetaNumber++)
+            )
+        }
 
         return SurfaceLambda(
             binder = binder,
-            body = convertExpr(expressions[1])
+            body = convertExpr(expressions.last())
+        )
+    }
+
+    private fun convertArrowExpr(
+        element: DeltaTypeTheoryArrowExpr
+    ): SurfaceTerm {
+
+        var domain = convertAtom(element.atom)
+
+        for (argument in element.argumentList) {
+            domain = SurfaceApp(
+                domain,
+                convertExpr(argument.expr)
+            )
+        }
+
+        return SurfacePi(
+            binder = SurfaceBinder(
+                name = null,
+                type = domain
+            ),
+            body = convertExpr(element.expr)
         )
     }
 
