@@ -10,6 +10,7 @@ import camp.delta.deltatypetheory.core.kernel.model.GlobalRef
 import camp.delta.deltatypetheory.core.kernel.model.Lambda
 import camp.delta.deltatypetheory.core.kernel.model.Pi
 import camp.delta.deltatypetheory.core.kernel.model.TypeTerm
+import camp.delta.deltatypetheory.core.kernel.reduce.applyRule
 
 /**
  * Крюк вместо ElaborationContext: по имени глобала возвращает его значение.
@@ -110,7 +111,20 @@ fun definitionallyEqual(
 fun whnf(
     term: CoreTerm,
     ctx: ElaborationContext,
-): CoreTerm = whnf(term) { name -> ctx.lookupGlobal(name.value)?.value }
+): CoreTerm {
+    val reduced = whnf(term) { name ->
+        ctx.lookupGlobal(name.value)?.value
+    }
+
+    for (rule in ctx.rules) {
+        val rewritten = applyRule(rule, reduced)
+        if (rewritten != null) {
+            return whnf(rewritten, ctx)
+        }
+    }
+
+    return reduced
+}
 
 fun normalize(
     term: CoreTerm,

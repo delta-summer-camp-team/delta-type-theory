@@ -18,6 +18,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import camp.delta.deltatypetheory.core.kernel.model.CoreRule
 
 class ReductionTest {
 
@@ -138,5 +139,151 @@ class ReductionTest {
     // (t : Type) -> x, где x := Type
     val term = Pi(TypeTerm, GlobalRef(GlobalName("x")))
     assertEquals(Pi(TypeTerm, TypeTerm), normalize(term, resolver("x" to TypeTerm)))
+  }
+
+  @Test
+  fun `whnf applies user rule`() {
+    val ctx = ElaborationContext()
+
+    val natRec = GlobalRef(GlobalName("natRec"))
+    val zero = GlobalRef(GlobalName("zero"))
+
+    val p = GlobalName("P")
+    val z = GlobalName("z")
+    val s = GlobalName("s")
+
+    val lhs =
+      App(
+        App(
+          App(
+            App(natRec, GlobalRef(p)),
+            GlobalRef(z),
+          ),
+          GlobalRef(s),
+        ),
+        zero,
+      )
+
+    ctx.addRule(
+      CoreRule(
+        name = "natRec.zero",
+        lhs = lhs,
+        rhs = GlobalRef(z),
+        variables = setOf(p, z, s),
+      )
+    )
+
+    val base = GlobalRef(GlobalName("base"))
+    val step = GlobalRef(GlobalName("step"))
+    val nat = GlobalRef(GlobalName("Nat"))
+
+    val term =
+      App(
+        App(
+          App(
+            App(natRec, nat),
+            base,
+          ),
+          step,
+        ),
+        zero,
+      )
+
+    assertEquals(
+      base,
+      whnf(term, ctx),
+    )
+  }
+
+  @Test
+  fun `whnf applies natRec succ rule`() {
+    val ctx = ElaborationContext()
+
+    val natRec = GlobalRef(GlobalName("natRec"))
+    val succ = GlobalRef(GlobalName("succ"))
+
+    val p = GlobalName("P")
+    val z = GlobalName("z")
+    val s = GlobalName("s")
+    val n = GlobalName("n")
+
+    val lhs =
+      App(
+        App(
+          App(
+            App(natRec, GlobalRef(p)),
+            GlobalRef(z),
+          ),
+          GlobalRef(s),
+        ),
+        App(succ, GlobalRef(n)),
+      )
+
+    val rhs =
+      App(
+        App(
+          GlobalRef(s),
+          GlobalRef(n),
+        ),
+        App(
+          App(
+            App(
+              App(natRec, GlobalRef(p)),
+              GlobalRef(z),
+            ),
+            GlobalRef(s),
+          ),
+          GlobalRef(n),
+        ),
+      )
+
+    ctx.addRule(
+      CoreRule(
+        name = "natRec.succ",
+        lhs = lhs,
+        rhs = rhs,
+        variables = setOf(p, z, s, n),
+      )
+    )
+
+    val nat = GlobalRef(GlobalName("Nat"))
+    val base = GlobalRef(GlobalName("base"))
+    val step = GlobalRef(GlobalName("step"))
+    val k = GlobalRef(GlobalName("k"))
+
+    val term =
+      App(
+        App(
+          App(
+            App(natRec, nat),
+            base,
+          ),
+          step,
+        ),
+        App(succ, k),
+      )
+
+    val expected =
+      App(
+        App(
+          step,
+          k,
+        ),
+        App(
+          App(
+            App(
+              App(natRec, nat),
+              base,
+            ),
+            step,
+          ),
+          k,
+        ),
+      )
+
+    assertEquals(
+      expected,
+      whnf(term, ctx),
+    )
   }
 }
