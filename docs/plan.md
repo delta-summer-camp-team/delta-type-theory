@@ -10,6 +10,26 @@ graph LR
 %% Milestones are neutral
     classDef milestone fill:#add8e6,stroke:#4682b4,color:#000
 
+
+    subgraph m4 ["M4 — Пользовательские правила редукции"]
+        P11["P11: Добавить синтаксис<br/>объявлений rule"]:::plugin
+        S7{{"S7: Добавить правила<br/>в surface-модель"}}:::surface
+        S8["S8: Конвертировать правила<br/>из PSI в surface"]:::surface
+        C9["C9: Обрабатывать правила<br/>в тайпчекере"]:::core
+
+        M4(("M4:<br/>Пользовательские<br/>правила редукции")):::milestone
+    end
+
+    subgraph m5 ["M5 — Meta и неявные переменные"]
+        P12["P12: Добавить синтаксис<br/>неявных биндеров"]:::plugin
+        S9{{"S9: Добавить нумерованные<br/>surface-meta"}}:::surface
+        S10["S10: Адаптировать surface-модель<br/>и PSI-конвертер"]:::surface
+        C10["C10: Автоматически<br/>решать meta"]:::core
+
+        M5(("M5:<br/>Meta и неявные<br/>переменные")):::milestone
+    end
+
+
     subgraph m1 ["M1 — Базовая интеракция с IDE и dummy-цепочка до тайпчека"]
         P1["P1: Зарегистрировать язык<br/>и тип файла"]:::plugin
         P2["P2: Определить примитивную<br/>грамматику и лексер"]:::plugin
@@ -40,6 +60,13 @@ graph LR
         S6["S6: Заменить StubChecker<br/>на реальный тайпчекер"]:::surface
 
         M2(("M2:<br/>Реальный тайпчек")):::milestone
+    end
+    
+    subgraph m3 ["M3 -- IDE features"]
+        P7["P7: Подсветка скобок"]:::plugin
+        P8["P8: Подсветка синтаксиса"]:::plugin
+        P9["P9: Structure view"]:::plugin
+        P10["P10: New file action"]:::plugin
     end
 
 %% Plugin
@@ -98,8 +125,33 @@ graph LR
     C7 --> C8
 
     C8 --> S6
-```
+    
+    P3 --> P7
+    P3 --> P8
+    P3 --> P9
+    P3 --> P10
 
+%% Milestone 4: user-defined reduction rules
+
+    P3 --> P11
+    S2 --> S7
+    P11 --> S8
+    S7 --> S8
+    S8 --> C9
+    C8 --> C9
+    C9 --> M4
+
+%% Milestone 5: metas and implicit binders
+
+    P3 --> P12
+    S1 --> S9
+    P12 --> S10
+    S9 --> S10
+    S4 --> S10
+    S10 --> C10
+    C8 --> C10
+    C10 --> M5
+```
 ---
 
 ## Legend
@@ -292,6 +344,82 @@ graph LR
 - **Критерии приёмки:** Ошибка в файле `.delta`, например дублирующееся имя, отображается как подсвеченная диагностика в редакторе, аналогично синтаксической ошибке в обычном языке программирования.
 
 ---
+### P7: Сделать поддержку скобок
+- **Область:** surface
+- **Этап:** M3
+- **Задача:** Сделать работу со скобками удобной!
+- **Подробности:** (нет)
+- **AC:** (нет)
+
+---
+### P8: Create syntax highlighting (colors for tokens)
+- **Scope:** plugin-ide
+- **Milestone:** M3
+- **Task:** Create `DeltaTPSyntaxHighlighter` and `DeltaTPSyntaxHighlighterFactory`.
+- **Purpose:** Color-code keywords, comments, identifiers, and operators in the editor.
+- **Details:**
+  - `DeltaTPSyntaxHighlighter : SyntaxHighlighterBase`:
+    - `getHighlightingLexer()` → `DeltaTPJFlexLexer()`
+    - `getTokenHighlights(tokenType)` — map each token type to a color category:
+      - Keywords (`axiom`, `def`, `rule`) → keyword color
+      - Comments → comment color
+      - Identifiers → identifier color
+      - Operators/punctuation → operator color
+      - Bad characters → error color
+  - `DeltaTPSyntaxHighlighterFactory : SyntaxHighlighterFactory`:
+    - `getSyntaxHighlighter(project, virtualFile)` → new `DeltaTPSyntaxHighlighter()`
+  - Register `<extensionPoint lang.syntaxHighlighterFactory>` in `plugin.xml`.
+  - Change class names if appropriate
+- **Acceptance criteria:** Keywords like `axiom` appear in a different color than identifiers (and other features).
+
+---
+
+### P9: Create the structure view
+- **Scope:** plugin
+- **Milestone:** M3
+- **Task:** Create `DeltaTPStructureViewFactory`, `DeltaTPStructureViewModel`,
+  and `DeltaTPStructureViewElement`.
+- **Purpose:** Show an outline of the file's declarations in the Structure tool window.
+- **Details:**
+  - `DeltaTPStructureViewFactory : PsiStructureViewFactory` — creates the model.
+  - `DeltaTPStructureViewModel` -- rooted at the file; lists axiom/def/rule declarations.
+  - `DeltaTPStructureViewElement` -- for each declaration, shows "axiom name" / "def name" / "rule name".
+    Children: only the file node has children (the declarations).
+  - Register `<extensionPoint lang.psiStructureViewFactory>` in `plugin.xml`.
+- **Acceptance criteria:** The Structure tool window lists all declarations in the file.
+
+---
+
+### P10: Create the new file action
+- **Name:** Create new file action
+- **Scope:** plugin
+- **Milestone:** M3
+- **Task:** Create `NewDeltaTPFileAction` and a file template.
+- **Purpose:** Add "DeltaTP File" to the New menu so users can create `.delta` files easily.
+- **Details:**
+  - `class NewDeltaTPFileAction : CreateFileFromTemplateAction("DeltaTP File", ...)`
+  - File template `DeltaTP.delta.ft` containing `-- DeltaTP file`.
+  - Register `<action id="DeltaTP.NewFile">` in `plugin.xml`, added to the New group.
+  - Register `<extensionPoint internalFileTemplate>` in `plugin.xml`.
+- **Acceptance criteria:** Right-click → New → DeltaTP File creates a `.delta` file.
+
+---
+
+### P11: Добавить синтаксис объявлений правил
+- **Команда:** plugin
+- **Этап:** M4
+- **Задача:** Расширить лексер и грамматику конструкцией `rule name term ↦ term;`.
+- **AC:** Объявления правил, включая правила для `natRec`, корректно парсятся и представлены в PSI.
+
+---
+
+### P12: Добавить синтаксис неявных биндеров
+- **Команда:** plugin
+- **Этап:** M5
+- **Задача:** Разрешить пропущенные типы и имена биндеров в Pi- и λ-выражениях, включая `λ m => ...` и `Nat → Nat → Nat`.
+- **AC:** Выражения с сокращёнными Pi- и λ-биндерами корректно парсятся.
+
+---
 
 ## Команда Surface
 
@@ -413,6 +541,37 @@ graph LR
 - **AC:** Все диагностики, которые тайпчекер выдаёт правильно отображаются в IDE.
 
 ---
+
+### S7: Добавить правила в surface-модель
+- **Команда:** surface
+- **Этап:** M4
+- **Задача:** Представить правила отдельным surface-типом, добавить для них отдельную коллекцию в `SurfaceProgram` и научиться собирать её.
+- **AC:** `SurfaceProgram` хранит декларации и правила раздельно, сохраняя все правила исходной программы.
+
+---
+
+### S8: Конвертировать правила из PSI в surface
+- **Команда:** surface
+- **Этап:** M4
+- **Задача:** Расширить `PsiToSurfaceConverter` преобразованием имени, левой и правой частей правила.
+- **AC:** PSI-объявление `rule` преобразуется в соответствующее surface-правило.
+
+---
+
+### S9: Добавить нумерованные surface-meta
+- **Команда:** surface
+- **Этап:** M5
+- **Задача:** Ввести новый вариант `SurfaceTerm` для meta-переменной, хранящий её уникальный номер.
+- **AC:** Пропущенную часть surface-терма можно представить и однозначно идентифицировать как meta.
+
+---
+
+### S10: Адаптировать surface-модель и PSI-конвертер к неявным биндерам
+- **Команда:** surface
+- **Этап:** M5
+- **Задача:** Разрешить анонимные биндеры и создавать нумерованные meta вместо пропущенных типов при конверсии сокращённых Pi- и λ-выражений из PSI.
+- **AC:** Сокращённые выражения преобразуются в surface-дерево с анонимными биндерами и нумерованными meta на месте пропущенных типов.
+
 
 ## Команда Core
 
@@ -632,3 +791,19 @@ graph LR
   - `elaborateAxiom` и `elaborateDef` ничего не должны возвращать, только использовать `diagnosticReporter`, и функции проверки терма у `termElaborator`. `fun check(program: SurfaceProgram): SurfaceCheckResult` возвращает, по сути, коллекцию репортов.
   - Функции `elaborate...` берут `SurfaceDecl` нужного типа (аксиому или дефиницию), проверяют, что глобальное имя не повторяется, вызывают нужные checkType. И, если всё хорошо, добавляют правильный `GlobalBinding` в `context`.
 - **AC:** ОНО РАБОТАЕТ! 
+
+---
+
+### C9: Обрабатывать пользовательские правила в тайпчекере
+- **Команда:** core
+- **Этап:** M4
+- **Задача:** Проверять surface-правила, добавлять корректные правила в контекст и учитывать их при редукции термов.
+- **AC:** Корректные правила участвуют в вычислении, а некорректные дают диагностики.
+
+---
+
+### C10: Автоматически решать meta
+- **Команда:** core
+- **Этап:** M5
+- **Задача:** Во время элаборации выводить значения meta из ожидаемых типов, локального контекста и ограничений унификации.
+- **AC:** Программа с `λ m => ...` и `Nat → Nat → Nat` проходит элаборацию без явных типов и имён пропущенных биндеров.
