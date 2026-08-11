@@ -15,7 +15,7 @@ class DeltaTypeTheoryUnicodeInputHandler : TypedHandlerDelegate () {
         "\\N" to "ℕ",
         "\\forall" to "∀",
         "\\exists" to "∃",
-
+        "\\rule" to "↦",
     )
 
     override fun charTyped (
