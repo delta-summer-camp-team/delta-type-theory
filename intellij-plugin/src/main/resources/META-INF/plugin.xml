@@ -23,6 +23,16 @@
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <actions>
+        <action
+            id = "camp.delta.deltatypetheory.NewFile"
+            class = "camp.delta.deltatypetheory.plugin.templatebuilder.DeltaTheoryTypeFileAction"
+            text = "&amp;Delta Type Theory file"
+            description = "Creates a Delta Type Theory File at a specified location" >
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+    </actions>
+
     <extensions defaultExtensionNs="com.intellij">
         <typedHandler implementation="camp.delta.deltatypetheory.plugin"/>
         <fileType
@@ -47,6 +57,7 @@
         <typedHandler
             implementation="camp.delta.deltatypetheory.plugin.DeltaTypeTheoryUnicodeInputHandler"
         />
+        <internalFileTemplate name="template.delta"/>
     </extensions>
     <!-- bracket highlighter -->
     <!-- Only the listener is registered as it itself calls the DeltaBracketHighlighter -->
@@ -55,7 +66,4 @@
         <editorFactoryListener
                 implementation="camp.delta.deltatypetheory.plugin.DeltaEditorListener"/>
     </extensions>
-    <actions>
-        <add-to-group/>
-    </actions>
 </idea-plugin>
