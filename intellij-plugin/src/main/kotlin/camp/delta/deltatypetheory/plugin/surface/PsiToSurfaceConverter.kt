@@ -23,14 +23,18 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
 import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
 import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
 import camp.delta.deltatypetheory.core.surface.model.SurfacePi
+import camp.delta.deltatypetheory.core.surface.model.SurfaceRuleDecl
+import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryRuleDecl
 
 class PsiToSurfaceConverter {
 
     fun convert(file: PsiFile): SurfaceProgram {
         val declarations = collectTopLevelDeclarations(file)
+        val rules = collectTopLevelRules(file)
 
         return SurfaceProgram(
             declarations = declarations.map { convertDecl(it) },
+            rules = rules.map { convertRule(it) },
             fileName = file.name
         )
     }
@@ -40,6 +44,12 @@ class PsiToSurfaceConverter {
         return file.children.filterIsInstance<DeltaTypeTheoryItem>().mapNotNull { item ->
             item.axiomDecl ?: item.defDecl
         }
+    }
+
+    private fun collectTopLevelRules(file: PsiFile): List<PsiElement> {
+        return file.children
+            .filterIsInstance<DeltaTypeTheoryItem>()
+            .mapNotNull { item -> item.ruleDecl }
     }
 
     private fun convertDecl(element: PsiElement): SurfaceDecl {
@@ -88,6 +98,31 @@ class PsiToSurfaceConverter {
             name = name,
             type = type,
             value = value,
+            range = null
+        )
+    }
+
+    private fun convertRule(element: PsiElement): SurfaceRuleDecl {
+        val rule = element as DeltaTypeTheoryRuleDecl
+        val expressions = rule.exprList
+
+        require(expressions.size == 2) {
+            "Expected 2 expressions in rule, but got ${expressions.size}"
+        }
+
+        val name = SurfaceName(
+            rule.text
+                .substringAfter("rule ")
+                .substringBefore(":")
+                .trim()
+        )
+        val lhs = convertExpr(expressions[0])
+        val rhs = convertExpr(expressions[1])
+
+        return SurfaceRuleDecl(
+            name = name,
+            lhs = lhs,
+            rhs = rhs,
             range = null
         )
     }

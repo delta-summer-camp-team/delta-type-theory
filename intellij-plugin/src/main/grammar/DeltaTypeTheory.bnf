@@ -14,11 +14,14 @@ psiImplPackage="camp.delta.deltatypetheory.plugin.psi.impl"
   tokens = [
     AXIOM_KEYWORD  = 'axiom'
     DEF_KEYWORD    = 'def'
+    RULE_KEYWORD = 'rule'
+    RULE_ARROW   = '↦'
     EQUAL          = ':='
     TO             = '->'
     FOLLOWS        = '=>'
     LAMBDA         = 'λ'
     COLON          = ':'
+    DOT            = '.'
     LPAREN         = '('
     RPAREN         = ')'
     SEMICOLON      = ';'
@@ -29,11 +32,15 @@ psiImplPackage="camp.delta.deltatypetheory.plugin.psi.impl"
 
 deltaTypeTheoryFile ::= item*
 
-item ::= axiomDecl | defDecl
+item ::= axiomDecl | defDecl | ruleDecl
 
 axiomDecl ::= AXIOM_KEYWORD IDENTIFIER COLON expr SEMICOLON
 
 defDecl ::= DEF_KEYWORD IDENTIFIER COLON expr EQUAL expr SEMICOLON
+
+ruleDecl ::= RULE_KEYWORD ruleName COLON expr RULE_ARROW expr SEMICOLON
+
+ruleName ::= IDENTIFIER (DOT IDENTIFIER)*
 
 expr ::= lambdaExpr | piExpr | application | atom
 
