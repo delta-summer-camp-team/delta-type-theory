@@ -22,6 +22,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import camp.delta.deltatypetheory.core.surface.model.SurfaceMeta
+import camp.delta.deltatypetheory.core.kernel.model.TypedCoreTerm
 
 class TermElaboratorTest {
 
@@ -190,5 +192,110 @@ class TermElaboratorTest {
         val result = elab.checkTerm(lam, wrongPi, LocalContext())
         assertNull(result)
         assertTrue(reporter.hasErrors())
+    }
+
+    @Test
+    fun `checks lambda with inferred parameter type`() {
+        val ctx = ElaborationContext()
+
+        ctx.addGlobal(
+            GlobalBinding(
+                name = GlobalName("Nat"),
+                type = TypeTerm,
+                value = null,
+            )
+        )
+
+        val reporter = DiagnosticReporter()
+        val elaborator = TermElaborator(ctx, reporter)
+
+        val term =
+            SurfaceLambda(
+                binder = SurfaceBinder(
+                    name = SurfaceName("m"),
+                    type = SurfaceMeta(0),
+                ),
+                body = SurfaceNameRef(
+                    SurfaceName("m")
+                ),
+            )
+
+        val expectedType =
+            Pi(
+                GlobalRef(GlobalName("Nat")),
+                GlobalRef(GlobalName("Nat")),
+            )
+
+        val result = elaborator.checkTerm(
+            term = term,
+            expectedType = expectedType,
+            localContext = LocalContext(),
+        )
+
+        assertEquals(
+            Lambda(
+                GlobalRef(GlobalName("Nat")),
+                BoundVar(0),
+            ),
+            result,
+        )
+
+        assertTrue(reporter.all().isEmpty())
+    }
+
+    @Test
+    fun `infers arrow chain with unnamed binders`() {
+        val ctx = ElaborationContext()
+
+        ctx.addGlobal(
+            GlobalBinding(
+                name = GlobalName("Nat"),
+                type = TypeTerm,
+                value = null,
+            )
+        )
+
+        val reporter = DiagnosticReporter()
+        val elaborator = TermElaborator(ctx, reporter)
+
+        val nat = SurfaceNameRef(SurfaceName("Nat"))
+
+        val term =
+            SurfacePi(
+                binder = SurfaceBinder(
+                    name = null,
+                    type = nat,
+                ),
+                body = SurfacePi(
+                    binder = SurfaceBinder(
+                        name = null,
+                        type = nat,
+                    ),
+                    body = nat,
+                ),
+            )
+
+        val result = elaborator.inferTerm(
+            term = term,
+            localContext = LocalContext(),
+        )
+
+        val coreNat = GlobalRef(GlobalName("Nat"))
+
+        assertEquals(
+            TypedCoreTerm(
+                term = Pi(
+                    coreNat,
+                    Pi(
+                        coreNat,
+                        coreNat,
+                    ),
+                ),
+                type = TypeTerm,
+            ),
+            result,
+        )
+
+        assertTrue(reporter.all().isEmpty())
     }
 }

@@ -82,7 +82,15 @@ class TermElaborator(
                 diagnosticReporter.reportError("Expected Type for Pi parameter type", term.binder.type.range)
                 return null
             }
-            val extended = localContext.push(binderName(term.binder), typeA.term)
+            val extended =
+                if (term.binder.name != null) {
+                    localContext.push(
+                        term.binder.name.value,
+                        typeA.term,
+                    )
+                } else {
+                    localContext
+                }
             val typeB = inferTerm(term.body, extended) ?: return null
             if (!definitionallyEqual(typeB.type, TypeTerm, elaborationContext)) {
                 diagnosticReporter.reportError("Expected Type for Pi body type", term.body.range)
@@ -121,21 +129,48 @@ class TermElaborator(
         expectedType: Pi,
         localContext: LocalContext,
     ): CoreTerm? {
-        val typeA = inferTerm(term.binder.type, localContext) ?: return null
-        if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-            diagnosticReporter.reportError("Expected Type for Lambda parameter type", term.binder.type.range)
-            return null
-        }
-        if (!definitionallyEqual(typeA.term, expectedType.parameterType, elaborationContext)) {
-            diagnosticReporter.reportError(
-                "Lambda parameter type mismatch: expected ${expectedType.parameterType}, got ${typeA.term}",
-                term.binder.range ?: term.range,
-            )
-            return null
-        }
-        val extended = localContext.push(binderName(term.binder), typeA.term)
-        val body = checkTerm(term.body, expectedType.body, extended) ?: return null
-        return Lambda(typeA.term, body)
+        val parameterType =
+            if (term.binder.type is SurfaceMeta) {
+                expectedType.parameterType
+            } else {
+                val typeA = inferTerm(term.binder.type, localContext) ?: return null
+
+                if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
+                    diagnosticReporter.reportError(
+                        "Expected Type for Lambda parameter type",
+                        term.binder.type.range,
+                    )
+                    return null
+                }
+
+                if (!definitionallyEqual(
+                        typeA.term,
+                        expectedType.parameterType,
+                        elaborationContext,
+                    )
+                ) {
+                    diagnosticReporter.reportError(
+                        "Lambda parameter type mismatch: expected ${expectedType.parameterType}, got ${typeA.term}",
+                        term.binder.range ?: term.range,
+                    )
+                    return null
+                }
+
+                typeA.term
+            }
+
+        val extended = localContext.push(
+            binderName(term.binder),
+            parameterType,
+        )
+
+        val body = checkTerm(
+            term.body,
+            expectedType.body,
+            extended,
+        ) ?: return null
+
+        return Lambda(parameterType, body)
     }
 
     private fun binderName(binder: SurfaceBinder): String = binder.name?.value ?: "_"
