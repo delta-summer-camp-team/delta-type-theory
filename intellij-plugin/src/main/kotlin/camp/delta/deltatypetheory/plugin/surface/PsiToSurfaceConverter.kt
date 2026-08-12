@@ -27,6 +27,7 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceMeta
 import camp.delta.deltatypetheory.core.surface.model.SurfacePi
 import camp.delta.deltatypetheory.core.surface.model.SurfaceRuleDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryRuleDecl
+import camp.delta.deltatypetheory.core.surface.model.SourceRange
 
 class PsiToSurfaceConverter {
 
@@ -81,7 +82,11 @@ class PsiToSurfaceConverter {
         return SurfaceAxiomDecl(
             name = name,
             type = type,
-            range = null
+            range = SourceRange(
+                filePath = axiom.containingFile.name,
+                startOffset = axiom.identifier.textRange.startOffset,
+                endOffset = axiom.identifier.textRange.endOffset,
+            )
         )
     }
 
@@ -102,7 +107,11 @@ class PsiToSurfaceConverter {
             name = name,
             type = type,
             value = value,
-            range = null
+            range = SourceRange(
+                filePath = def.containingFile.name,
+                startOffset = def.identifier.textRange.startOffset,
+                endOffset = def.identifier.textRange.endOffset,
+            )
         )
     }
 
