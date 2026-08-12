@@ -58,6 +58,7 @@
         <typedHandler
             implementation="camp.delta.deltatypetheory.plugin.DeltaTypeTheoryUnicodeInputHandler"
         />
+        <internalFileTemplate name="template.delta"/>
     </extensions>
 
 
