@@ -70,4 +70,12 @@
                 implementation="camp.delta.deltatypetheory.plugin.DeltaEditorListener"/>
     </extensions>
 
+    <extensions defaultExtensionNs="com.intellij">
+
+        <completion.contributor
+                language="DeltaTypeTheory"
+                implementationClass="camp.delta.deltatypetheory.plugin.DeltaTypeTheoryCompletionContributor"/>
+
+    </extensions>package camp.delta.deltatypetheory.plugin
+
 </idea-plugin>
