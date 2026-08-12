@@ -130,22 +130,46 @@ class TermElaborator(
         expectedType: Pi,
         localContext: LocalContext,
     ): CoreTerm? {
-        val typeA = inferTerm(term.binder.type, localContext) ?: return null
-        if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-            reportExpectedType(term.binder.type, typeA.type)
-            return null
-        }
-        if (!definitionallyEqual(typeA.term, expectedType.parameterType, elaborationContext)) {
-            diagnosticReporter.reportError(
-                "Lambda parameter type mismatch: expected '${formatCoreTerm(expectedType.parameterType)}', " +
-                    "but the annotation is '${formatCoreTerm(typeA.term)}'.",
-                term.binder.range ?: term.range,
-            )
-            return null
-        }
-        val extended = localContext.push(binderName(term.binder), typeA.term)
-        val body = checkTerm(term.body, expectedType.body, extended) ?: return null
-        return Lambda(typeA.term, body)
+        val parameterType =
+            if (term.binder.type is SurfaceMeta) {
+                expectedType.parameterType
+            } else {
+                val typeA = inferTerm(term.binder.type, localContext) ?: return null
+
+                if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
+                    reportExpectedType(term.binder.type, typeA.type)
+                    return null
+                }
+
+                if (!definitionallyEqual(
+                        typeA.term,
+                        expectedType.parameterType,
+                        elaborationContext,
+                    )
+                ) {
+                    diagnosticReporter.reportError(
+                        "Lambda parameter type mismatch: expected '${formatCoreTerm(expectedType.parameterType)}', " +
+                            "but the annotation is '${formatCoreTerm(typeA.term)}'.",
+                        term.binder.range ?: term.range,
+                    )
+                    return null
+                }
+
+                typeA.term
+            }
+
+        val extended = localContext.push(
+            binderName(term.binder),
+            parameterType,
+        )
+
+        val body = checkTerm(
+            term.body,
+            expectedType.body,
+            extended,
+        ) ?: return null
+
+        return Lambda(parameterType, body)
     }
 
     private fun binderName(binder: SurfaceBinder): String = binder.name?.value ?: "_"
