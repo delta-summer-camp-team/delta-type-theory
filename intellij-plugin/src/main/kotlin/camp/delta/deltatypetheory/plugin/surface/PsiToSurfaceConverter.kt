@@ -133,7 +133,7 @@ class PsiToSurfaceConverter {
             name = name,
             lhs = lhs,
             rhs = rhs,
-            range = null,
+            range = rule.sourceRange(),
         )
     }
 
@@ -169,8 +169,9 @@ class PsiToSurfaceConverter {
         for (argument in element.argumentList) {
             result =
                 SurfaceApp(
-                    result,
-                    convertExpr(argument.expr),
+                    function = result,
+                    argument = convertExpr(argument.expr),
+                    range = element.sourceRange(),
                 )
         }
 
@@ -182,10 +183,11 @@ class PsiToSurfaceConverter {
             val name = identifier.text
 
             return if (name == "Type") {
-                SurfaceTypeTerm
+                SurfaceTypeTerm(identifier.sourceRange())
             } else {
                 SurfaceNameRef(
-                    SurfaceName(name),
+                    name = SurfaceName(name),
+                    range = identifier.sourceRange(),
                 )
             }
         }
@@ -209,17 +211,20 @@ class PsiToSurfaceConverter {
                 SurfaceBinder(
                     name = SurfaceName(element.identifier.text),
                     type = convertExpr(expressions[0]),
+                    range = element.identifier.sourceRange(),
                 )
             } else {
                 SurfaceBinder(
                     name = SurfaceName(element.identifier.text),
-                    type = SurfaceMeta(nextMetaNumber++),
+                    type = SurfaceMeta(nextMetaNumber++, element.identifier.sourceRange()),
+                    range = element.identifier.sourceRange(),
                 )
             }
 
         return SurfaceLambda(
             binder = binder,
             body = convertExpr(expressions.last()),
+            range = element.sourceRange(),
         )
     }
 
@@ -229,8 +234,9 @@ class PsiToSurfaceConverter {
         for (argument in element.argumentList) {
             domain =
                 SurfaceApp(
-                    domain,
-                    convertExpr(argument.expr),
+                    function = domain,
+                    argument = convertExpr(argument.expr),
+                    range = element.sourceRange(),
                 )
         }
 
@@ -239,8 +245,10 @@ class PsiToSurfaceConverter {
                 SurfaceBinder(
                     name = null,
                     type = domain,
+                    range = element.sourceRange(),
                 ),
             body = convertExpr(element.expr),
+            range = element.sourceRange(),
         )
     }
 
@@ -255,11 +263,20 @@ class PsiToSurfaceConverter {
             SurfaceBinder(
                 name = SurfaceName(element.identifier.text),
                 type = convertExpr(expressions[0]),
+                range = element.identifier.sourceRange(),
             )
 
         return SurfacePi(
             binder = binder,
             body = convertExpr(expressions[1]),
+            range = element.sourceRange(),
         )
     }
+
+    private fun PsiElement.sourceRange(): SourceRange =
+        SourceRange(
+            filePath = containingFile.name,
+            startOffset = textRange.startOffset,
+            endOffset = textRange.endOffset,
+        )
 }

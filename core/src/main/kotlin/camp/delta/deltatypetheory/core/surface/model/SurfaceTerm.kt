@@ -1,36 +1,39 @@
 package camp.delta.deltatypetheory.core.surface.model
 
-sealed interface SurfaceTerm
+sealed interface SurfaceTerm {
+    val range: SourceRange?
+}
 
 // Non-terminals
 data class SurfacePi(
     val binder: SurfaceBinder,
     val body: SurfaceTerm,
-    val range: SourceRange?,
+    override val range: SourceRange? = null,
 ) : SurfaceTerm
 
 data class SurfaceLambda(
     val binder: SurfaceBinder,
     val body: SurfaceTerm,
-    val range: SourceRange?,
+    override val range: SourceRange? = null,
 ) : SurfaceTerm
 
 data class SurfaceApp(
     val function: SurfaceTerm,
     val argument: SurfaceTerm,
-    val range: SourceRange?,
+    override val range: SourceRange? = null,
 ) : SurfaceTerm
 
 // Terminals
 data class SurfaceTypeTerm(
-    val range: SourceRange?,
+    override val range: SourceRange? = null,
 ) : SurfaceTerm
 
 data class SurfaceNameRef(
     val name: SurfaceName,
-    val range: SourceRange?,
+    override val range: SourceRange? = null,
 ) : SurfaceTerm
 
 data class SurfaceMeta(
     val id: Int,
+    override val range: SourceRange? = null,
 ) : SurfaceTerm
