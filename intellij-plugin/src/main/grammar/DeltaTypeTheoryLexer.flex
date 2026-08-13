@@ -17,8 +17,8 @@ import com.intellij.lexer.FlexLexer;
 %eof}
 
 WHITE_SPACE   = [\ \n\t\r]+
-COMMENT       = "//" [^\r\n]*
-IDENTIFIER    = [a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*
+COMMENT       = "--" [^\r\n]*
+IDENTIFIER    = [a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*(\.[a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*)*
 
 %%
 

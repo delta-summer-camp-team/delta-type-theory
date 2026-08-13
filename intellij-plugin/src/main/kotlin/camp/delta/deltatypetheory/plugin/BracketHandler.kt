@@ -1,135 +1,110 @@
 package camp.delta.deltatypetheory.plugin
 
-import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.event.CaretEvent
-import com.intellij.openapi.editor.event.CaretListener
-import com.intellij.openapi.editor.markup.HighlighterLayer
-import com.intellij.openapi.editor.markup.RangeHighlighter
-import com.intellij.openapi.editor.markup.TextAttributes
-import com.intellij.openapi.editor.colors.EditorColors
+import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.editor.markup.HighlighterTargetArea
+import com.intellij.psi.PsiFile
 
-class DeltaBracketHighlighter(
-    private val project: Project
-) : CaretListener {
+class BracketHandler : TypedHandlerDelegate() {
 
-    private val highlighters = mutableListOf<RangeHighlighter>()
-
-    override fun caretPositionChanged(event: CaretEvent) {
-        val editor = event.editor
-
-        val virtualFile = FileDocumentManager.getInstance().getFile(editor.document)
-
-        if (virtualFile?.extension != "delta") {
-            clearHighlights(editor)
-            return
-        }
-
-        highlightBrackets(editor)
-    }
-
-    private fun highlightBrackets(editor: Editor) {
-        clearHighlights(editor)
-
-        val document = editor.document
-        val text = document.text
-        val caretOffset = editor.caretModel.offset
-
-        if (text.isEmpty()) return
-
-        // Check the character immediately before the caret
-        // and the character immediately after it.
-        val bracketOffset = when {
-            caretOffset < text.length && isBracket(text[caretOffset]) ->
-                caretOffset
-
-            caretOffset > 0 && isBracket(text[caretOffset - 1]) ->
-                caretOffset - 1
-
-            else -> return
-        }
-
-        val bracket = text[bracketOffset]
-        val matchingBracket = findMatchingBracket(
-            text,
-            bracketOffset
-        ) ?: return
-
-        highlight(editor, bracketOffset)
-        highlight(editor, matchingBracket)
-    }
-
-    private fun isBracket(c: Char): Boolean {
-        return c in "()[]{}"
-    }
-
-    private fun findMatchingBracket(
-        text: String,
-        position: Int
-    ): Int? {
-        val current = text[position]
-
-        val pairs = mapOf(
+    companion object {
+        private val PAIRS = mapOf(
             '(' to ')',
-            ')' to '(',
-            '[' to ']',
-            ']' to '[',
             '{' to '}',
-            '}' to '{'
+            '[' to ']'
         )
 
-        val target = pairs[current] ?: return null
+        fun handleBackspace(
+            editor: Editor,
+            caret: Caret?,
+            dataContext: DataContext?,
+            originalHandler: EditorActionHandler?
+        ) {
+            val document = editor.document
+            val offset = editor.caretModel.offset
 
-        val direction = if (current in "([{") 1 else -1
+            if (offset > 0 && offset < document.textLength) {
 
-        var depth = 0
-        var i = position
+                val left = document.charsSequence[offset - 1]
+                val right = document.charsSequence[offset]
 
-        while (i in text.indices) {
-            val c = text[i]
+                if (PAIRS[left] == right) {
 
-            if (c == current) {
-                depth++
-            } else if (c == target) {
-                depth--
+                    document.deleteString(
+                        offset - 1,
+                        offset + 1
+                    )
 
-                if (depth == 0) {
-                    return i
+                    editor.caretModel.moveToOffset(offset - 1)
+
+                    return
                 }
             }
 
-            i += direction
+            originalHandler?.execute(
+                editor,
+                caret,
+                dataContext
+            )
         }
 
-        return null
+        fun handleDelete(
+            editor: Editor,
+            caret: Caret?,
+            dataContext: DataContext?,
+            originalHandler: EditorActionHandler?
+        ) {
+            val document = editor.document
+            val offset = editor.caretModel.offset
+
+            if (offset > 0 && offset < document.textLength) {
+
+                val left = document.charsSequence[offset - 1]
+                val right = document.charsSequence[offset]
+
+                if (PAIRS[left] == right) {
+
+                    document.deleteString(
+                        offset - 1,
+                        offset + 1
+                    )
+
+                    editor.caretModel.moveToOffset(offset - 1)
+
+                    return
+                }
+            }
+
+            originalHandler?.execute(
+                editor,
+                caret,
+                dataContext
+            )
+        }
     }
 
-    private fun highlight(
+    override fun charTyped(
+        c: Char,
+        project: Project,
         editor: Editor,
-        offset: Int
-    ) {
-        val attributes = editor.colorsScheme.getAttributes(
-            EditorColors.SEARCH_RESULT_ATTRIBUTES
-        )
+        file: PsiFile
+    ): Result {
 
-        val highlighter = editor.markupModel.addRangeHighlighter(
+        val closingBracket = PAIRS[c] ?: return Result.CONTINUE
+
+        val document = editor.document
+        val offset = editor.caretModel.offset
+
+        document.insertString(
             offset,
-            offset + 1,
-            HighlighterLayer.SELECTION - 1,
-            attributes,
-            HighlighterTargetArea.EXACT_RANGE
+            closingBracket.toString()
         )
 
-        highlighters.add(highlighter)
-    }
+        editor.caretModel.moveToOffset(offset)
 
-    private fun clearHighlights(editor: Editor) {
-        highlighters.forEach {
-            editor.markupModel.removeHighlighter(it)
-        }
-
-        highlighters.clear()
+        return Result.CONTINUE
     }
 }

@@ -22,7 +22,7 @@ class StubSurfaceTypeCheckerTest {
                 .check(
                     SurfaceProgram(
                         declarations = listOf(
-                            axiom("Nat", SurfaceTypeTerm),
+                            axiom("Nat", SurfaceTypeTerm()),
                             axiom("zero", SurfaceNameRef(name("Nat"))),
                         ),
                         rules = emptyList(),
@@ -43,8 +43,8 @@ class StubSurfaceTypeCheckerTest {
                 .check(
                     SurfaceProgram(
                         declarations = listOf(
-                            axiom("Nat", SurfaceTypeTerm),
-                            axiom("Nat", SurfaceTypeTerm),
+                            axiom("Nat", SurfaceTypeTerm()),
+                            axiom("Nat", SurfaceTypeTerm()),
                         ),
                         rules = emptyList(),
                         fileName = null,
@@ -67,13 +67,13 @@ class StubSurfaceTypeCheckerTest {
                 .check(
                     SurfaceProgram(
                         declarations = listOf(
-                            axiom("A", SurfaceTypeTerm),
+                            axiom("A", SurfaceTypeTerm()),
                             SurfaceDefDecl(
                                 name("f"),
                                 SurfaceNameRef(name("A")),
                                 SurfaceApp(
                                     SurfaceNameRef(name("A")),
-                                    SurfaceTypeTerm,
+                                    SurfaceTypeTerm(),
                                 ),
                                 null,
                             ),
@@ -96,15 +96,15 @@ class StubSurfaceTypeCheckerTest {
                 .check(
                     SurfaceProgram(
                         declarations = listOf(
-                            axiom("A", SurfaceTypeTerm),
+                            axiom("A", SurfaceTypeTerm()),
                             axiom(
                                 "idType",
                                 SurfacePi(
                                     SurfaceBinder(
                                         name("A"),
-                                        SurfaceTypeTerm,
+                                        SurfaceTypeTerm(),
                                     ),
-                                    SurfaceTypeTerm,
+                                    SurfaceTypeTerm(),
                                 ),
                             ),
                         ),

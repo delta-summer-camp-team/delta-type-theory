@@ -48,7 +48,7 @@ class TermElaboratorTest {
     @Test
     fun inferTypeTerm() {
         val (elab, _) = makeElab()
-        val result = elab.inferTerm(SurfaceTypeTerm, LocalContext())
+        val result = elab.inferTerm(SurfaceTypeTerm(), LocalContext())
         assertNotNull(result)
         assertEquals(TypeTerm, result.type)
     }
@@ -147,7 +147,7 @@ class TermElaboratorTest {
     @Test
     fun checkTypeMatches() {
         val (elab, _) = makeElab()
-        val result = elab.checkTerm(SurfaceTypeTerm, TypeTerm, LocalContext())
+        val result = elab.checkTerm(SurfaceTypeTerm(), TypeTerm, LocalContext())
         assertNotNull(result)
         assertEquals(TypeTerm, result)
     }
@@ -156,7 +156,7 @@ class TermElaboratorTest {
     fun checkTypeMismatch() {
         val (elab, reporter) = makeElab()
         val result = elab.checkTerm(
-            SurfaceTypeTerm,
+            SurfaceTypeTerm(),
             GlobalRef(nat),
             LocalContext(),
         )

@@ -54,11 +54,15 @@
             language = "DeltaTypeTheory"
             implementationClass = "camp.delta.deltatypetheory.plugin.highlights.DeltaTypeTheorySyntaxHighlighterFactory"
         />
+
         <typedHandler
             implementation="camp.delta.deltatypetheory.plugin.DeltaTypeTheoryUnicodeInputHandler"
         />
         <internalFileTemplate name="template.delta"/>
     </extensions>
+
+
+
     <!-- bracket highlighter -->
     <!-- Only the listener is registered as it itself calls the DeltaBracketHighlighter -->
     <extensions defaultExtensionNs="com.intellij">
@@ -66,4 +70,18 @@
         <editorFactoryListener
                 implementation="camp.delta.deltatypetheory.plugin.DeltaEditorListener"/>
     </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <completion.contributor
+                language="DeltaTypeTheory"
+                implementationClass="camp.delta.deltatypetheory.plugin.DeltaTypeTheoryCompletionContributor"/>
+
+    </extensions>package camp.delta.deltatypetheory.plugin
+
+    <extensions defaultExtensionNs="com.intellij">
+        <typedHandler
+                implementation="camp.delta.deltatypetheory.plugin.BracketHandler"/>
+    </extensions>
+
 </idea-plugin>

@@ -11,28 +11,47 @@ import camp.delta.deltatypetheory.core.surface.model.SurfacePi
 import camp.delta.deltatypetheory.core.surface.model.SurfaceProgram
 import camp.delta.deltatypetheory.core.surface.model.SurfaceRuleDecl
 import camp.delta.deltatypetheory.core.surface.model.SurfaceTypeTerm
+import camp.delta.deltatypetheory.core.surface.model.SourceRange
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import junit.framework.TestCase.assertEquals
 
 class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
-    fun testConvertsAxiomNatType() {
-        val file =
-            myFixture.configureByText(
-                "test.delta",
-                "axiom Nat : Type;",
-            )
+    private fun range(
+        file: String,
+        start: Int,
+        end: Int,
+    ) = SourceRange(
+        filePath = file,
+        startOffset = start,
+        endOffset = end,
+    )
 
-        val result =
-            PsiToSurfaceConverter()
-                .convert(file)
+    fun testConvertsAxiomNatType() {
+        val file = myFixture.configureByText(
+            "test.delta",
+            "axiom Nat : Type;",
+        )
+
+        val result = PsiToSurfaceConverter().convert(file)
 
         assertEquals(
             SurfaceProgram(
                 declarations = listOf(
                     SurfaceAxiomDecl(
                         name = SurfaceName("Nat"),
-                        type = SurfaceTypeTerm,
-                        range = null,
+                        type = SurfaceTypeTerm(
+                            range = range(
+                                "test.delta",
+                                12,
+                                16,
+                            ),
+                        ),
+                        range = range(
+                            "test.delta",
+                            6,
+                            9,
+                        ),
                     ),
                 ),
                 rules = emptyList(),
@@ -41,42 +60,66 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
             result,
         )
     }
+
     fun testPreservesDeclarationOrder() {
         val file = myFixture.configureByText(
             "test.delta",
             """
         axiom Nat : Type;
         axiom Bool : Type;
-        """.trimIndent()
+        """.trimIndent(),
         )
 
         val result = PsiToSurfaceConverter().convert(file)
 
         assertEquals(2, result.declarations.size)
 
+        val first = result.declarations[0] as SurfaceAxiomDecl
+        val second = result.declarations[1] as SurfaceAxiomDecl
+
+        assertEquals(SurfaceName("Nat"), first.name)
+
         assertEquals(
-            SurfaceAxiomDecl(
-                name = SurfaceName("Nat"),
-                type = SurfaceTypeTerm,
-                range = null,
+            SurfaceTypeTerm(
+                range = range(
+                    "test.delta",
+                    12,
+                    16,
+                ),
             ),
-            result.declarations[0],
+            first.type,
+        )
+
+        assertEquals(SurfaceName("Bool"), second.name)
+
+        // "axiom Bool : Type;" starts at offset 21.
+        // Type starts at 27 and ends at 31.
+        assertEquals(
+            SurfaceTypeTerm(
+                range = range(
+                    "test.delta",
+                    27,
+                    31,
+                ),
+            ),
+            second.type,
         )
 
         assertEquals(
-            SurfaceAxiomDecl(
-                name = SurfaceName("Bool"),
-                type = SurfaceTypeTerm,
-                range = null,
-            ),
-            result.declarations[1],
+            range("test.delta", 6, 9),
+            first.range,
+        )
+
+        assertEquals(
+            true,
+            second.range != null,
         )
     }
 
     fun testConvertsNameReference() {
         val file = myFixture.configureByText(
             "test.delta",
-            "axiom Nat : Nat;"
+            "axiom Nat : Nat;",
         )
 
         val result = PsiToSurfaceConverter().convert(file)
@@ -85,9 +128,13 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
             SurfaceAxiomDecl(
                 name = SurfaceName("Nat"),
                 type = SurfaceNameRef(
-                    SurfaceName("Nat")
+                    SurfaceName("Nat"),
                 ),
-                range = null,
+                range = range(
+                    "test.delta",
+                    6,
+                    9,
+                ),
             ),
             result.declarations.single(),
         )
@@ -96,7 +143,7 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
     fun testConvertsRule() {
         val file = myFixture.configureByText(
             "test.delta",
-            "rule beta: x ↦ x;"
+            "rule beta: x ↦ x;",
         )
 
         val result = PsiToSurfaceConverter().convert(file)
@@ -107,10 +154,10 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
             SurfaceRuleDecl(
                 name = SurfaceName("beta"),
                 lhs = SurfaceNameRef(
-                    SurfaceName("x")
+                    SurfaceName("x"),
                 ),
                 rhs = SurfaceNameRef(
-                    SurfaceName("x")
+                    SurfaceName("x"),
                 ),
                 range = null,
             ),
@@ -121,12 +168,13 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
     fun testParsesNatRecRule() {
         val file = myFixture.configureByText(
             "test.delta",
-            "rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;"
+            "rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;",
         )
 
         val result = PsiToSurfaceConverter().convert(file)
 
         assertEquals(1, result.rules.size)
+
         assertEquals(
             SurfaceName("natRec.zero"),
             result.rules.single().name,
@@ -137,25 +185,33 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         val file = myFixture.configureByText(
             "test.delta",
             """
-        rule beta: x ↦ x;
-        rule gamma: y ↦ y;
-        """.trimIndent()
+            rule beta: x ↦ x;
+            rule gamma: y ↦ y;
+            """.trimIndent(),
         )
 
         val result = PsiToSurfaceConverter().convert(file)
 
         assertEquals(2, result.rules.size)
-        assertEquals(SurfaceName("beta"), result.rules[0].name)
-        assertEquals(SurfaceName("gamma"), result.rules[1].name)
+
+        assertEquals(
+            SurfaceName("beta"),
+            result.rules[0].name,
+        )
+
+        assertEquals(
+            SurfaceName("gamma"),
+            result.rules[1].name,
+        )
     }
 
     fun testConvertsNatRecRules() {
         val file = myFixture.configureByText(
             "test.delta",
             """
-        rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;
-        rule natRec.succ: natRec(P)(z)(s)(succ(n)) ↦ s(n)(natRec(P)(z)(s)(n));
-        """.trimIndent()
+            rule natRec.zero: natRec(P)(z)(s)(zero) ↦ z;
+            rule natRec.succ: natRec(P)(z)(s)(succ(n)) ↦ s(n)(natRec(P)(z)(s)(n));
+            """.trimIndent(),
         )
 
         val result = PsiToSurfaceConverter().convert(file)
@@ -176,33 +232,51 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
     fun testConvertsArrowTypeToAnonymousBinder() {
         val file = myFixture.configureByText(
             "test.delta",
-            "axiom f : Nat → Nat → Nat;"
+            "axiom f : Nat → Nat → Nat;",
         )
 
         val result = PsiToSurfaceConverter().convert(file)
+
+        val declaration =
+            result.declarations.single() as SurfaceAxiomDecl
 
         assertEquals(
             SurfacePi(
                 binder = SurfaceBinder(
                     name = null,
-                    type = SurfaceNameRef(SurfaceName("Nat")),
+                    type = SurfaceNameRef(
+                        SurfaceName("Nat"),
+                    ),
                 ),
                 body = SurfacePi(
                     binder = SurfaceBinder(
                         name = null,
-                        type = SurfaceNameRef(SurfaceName("Nat")),
+                        type = SurfaceNameRef(
+                            SurfaceName("Nat"),
+                        ),
                     ),
-                    body = SurfaceNameRef(SurfaceName("Nat")),
+                    body = SurfaceNameRef(
+                        SurfaceName("Nat"),
+                    ),
                 ),
             ),
-            (result.declarations.single() as SurfaceAxiomDecl).type,
+            declaration.type,
+        )
+
+        assertEquals(
+            range(
+                "test.delta",
+                6,
+                7,
+            ),
+            declaration.range,
         )
     }
 
     fun testConvertsLambdaWithoutTypeToMeta() {
         val file = myFixture.configureByText(
             "test.delta",
-            "def id : Nat → Nat := λ m => m;"
+            "def id : Nat → Nat := λ m => m;",
         )
 
         val result = PsiToSurfaceConverter().convert(file)
@@ -213,18 +287,28 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
                 type = SurfacePi(
                     binder = SurfaceBinder(
                         name = null,
-                        type = SurfaceNameRef(SurfaceName("Nat")),
+                        type = SurfaceNameRef(
+                            SurfaceName("Nat"),
+                        ),
                     ),
-                    body = SurfaceNameRef(SurfaceName("Nat")),
+                    body = SurfaceNameRef(
+                        SurfaceName("Nat"),
+                    ),
                 ),
                 value = SurfaceLambda(
                     binder = SurfaceBinder(
                         name = SurfaceName("m"),
                         type = SurfaceMeta(0),
                     ),
-                    body = SurfaceNameRef(SurfaceName("m")),
+                    body = SurfaceNameRef(
+                        SurfaceName("m"),
+                    ),
                 ),
-                range = null,
+                range = range(
+                    "test.delta",
+                    4,
+                    6,
+                ),
             ),
             result.declarations.single(),
         )
@@ -233,24 +317,39 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
     fun testConvertsNestedBareLambdas() {
         val file = myFixture.configureByText(
             "test.delta",
-            "def plus : Nat → Nat → Nat := λ m => λ n => m;"
+            "def plus : Nat → Nat → Nat := λ m => λ n => m;",
         )
 
         val result = PsiToSurfaceConverter().convert(file)
 
-        val value = (result.declarations.single() as SurfaceDefDecl).value as SurfaceLambda
+        val value =
+            (result.declarations.single() as SurfaceDefDecl).value
+                    as SurfaceLambda
 
         assertEquals(
-            SurfaceBinder(name = SurfaceName("m"), type = SurfaceMeta(0)),
+            SurfaceBinder(
+                name = SurfaceName("m"),
+                type = SurfaceMeta(0),
+            ),
             value.binder,
         )
 
         val inner = value.body as SurfaceLambda
+
         assertEquals(
-            SurfaceBinder(name = SurfaceName("n"), type = SurfaceMeta(1)),
+            SurfaceBinder(
+                name = SurfaceName("n"),
+                type = SurfaceMeta(1),
+            ),
             inner.binder,
         )
-        assertEquals(SurfaceNameRef(SurfaceName("m")), inner.body)
+
+        assertEquals(
+            SurfaceNameRef(
+                SurfaceName("m"),
+            ),
+            inner.body,
+        )
     }
 
     fun testNumbersMetasAcrossFile() {
@@ -259,18 +358,22 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
             """
             def a : Nat → Nat := λ x => x;
             def b : Nat → Nat := λ y => y;
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val result = PsiToSurfaceConverter().convert(file)
 
-        val defA = result.declarations[0] as SurfaceDefDecl
-        val defB = result.declarations[1] as SurfaceDefDecl
+        val defA =
+            result.declarations[0] as SurfaceDefDecl
+
+        val defB =
+            result.declarations[1] as SurfaceDefDecl
 
         assertEquals(
             SurfaceMeta(0),
             (defA.value as SurfaceLambda).binder.type,
         )
+
         assertEquals(
             SurfaceMeta(1),
             (defB.value as SurfaceLambda).binder.type,

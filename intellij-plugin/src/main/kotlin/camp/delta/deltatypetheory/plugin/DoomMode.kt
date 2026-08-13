@@ -1,39 +1,88 @@
 package camp.delta.deltatypetheory.plugin
 
 import com.intellij.openapi.editor.Editor
+import java.io.File
 
 object DoomMode {
 
-    private val activeGames =
-        mutableMapOf<Editor, DoomGameComponent>()
+    private val activeGames = mutableMapOf<Editor, Process>()
 
+    private val chocolateDoomExecutable =
+        """C:\Users\Viktor\Downloads\chocolate-doom-3.1.1-win64\chocolate-doom.exe"""
+
+    private val iwadPath =
+        File("""C:\Users\Viktor\Downloads\doom\DOOM.WAD""")
     fun activate(editor: Editor) {
 
-        // Don't start two games in the same editor.
-        if (activeGames.containsKey(editor)) {
+        // Don't start two Doom processes for the same editor.
+        val existingProcess = activeGames[editor]
+
+        if (existingProcess?.isAlive == true) {
             return
         }
 
-        val game = DoomGameComponent(editor)
+        activeGames.remove(editor)
 
-        activeGames[editor] = game
+        if (!iwadPath.exists()) {
+            println("DOOM.WAD not found: ${iwadPath.absolutePath}")
+            return
+        }
 
-        game.parent?.setComponentZOrder(game, 0)
+        try {
+            val process = ProcessBuilder(
+                chocolateDoomExecutable,
+                "-iwad",
+                iwadPath.absolutePath
+            )
+                .redirectErrorStream(true)
+                .start()
 
-        game.requestFocusInWindow()
+            activeGames[editor] = process
+
+            /*
+             * Wait for Chocolate Doom to exit.
+             *
+             * This happens on a background thread so we don't
+             * freeze IntelliJ.
+             */
+            Thread {
+                try {
+                    process.inputStream.bufferedReader().useLines { lines ->
+                        lines.forEach { line ->
+                            println("[Chocolate Doom] $line")
+                        }
+                    }
+                } catch (_: Exception) {
+                    // Process may have been terminated.
+                }
+
+                activeGames.remove(editor)
+            }.start()
+
+        } catch (exception: Exception) {
+            println(
+                "Failed to start Chocolate Doom: ${exception.message}"
+            )
+
+            exception.printStackTrace()
+        }
     }
 
     fun deactivate(editor: Editor) {
-        val game = activeGames[editor] ?: return
 
-        game.stop()
+        val process = activeGames.remove(editor)
+            ?: return
+
+        if (process.isAlive) {
+            process.destroy()
+        }
     }
 
     fun remove(editor: Editor) {
-        activeGames.remove(editor)
+        deactivate(editor)
     }
 
     fun isActive(editor: Editor): Boolean {
-        return activeGames.containsKey(editor)
+        return activeGames[editor]?.isAlive == true
     }
 }
