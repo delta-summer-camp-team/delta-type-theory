@@ -33,7 +33,10 @@ class StubSurfaceTypeCheckerTest {
         // The stub does not resolve references; it only reports a reference once its name
         // collides with a previously registered name.
         assertEquals(1, result.diagnostics.size)
-        assertEquals("Name Nat already used globally", result.diagnostics.single().message)
+        assertEquals(
+            "Reference 'Nat' conflicts with a global declaration.",
+            result.diagnostics.single().message,
+        )
     }
 
     @Test
@@ -52,7 +55,7 @@ class StubSurfaceTypeCheckerTest {
                 )
 
         assertEquals(
-            listOf("Name Nat already used for another axiom"),
+            listOf("Duplicate axiom declaration 'Nat'."),
             result.diagnostics.map { it.message },
         )
         assertTrue(
@@ -84,7 +87,10 @@ class StubSurfaceTypeCheckerTest {
                 )
 
         assertEquals(
-            listOf("Name A already used globally", "Name A already used globally"),
+            listOf(
+                "Reference 'A' conflicts with a global declaration.",
+                "Reference 'A' conflicts with a global declaration.",
+            ),
             result.diagnostics.map { it.message },
         )
     }
@@ -114,7 +120,7 @@ class StubSurfaceTypeCheckerTest {
                 )
 
         assertEquals(
-            listOf("Name A already used globally"),
+            listOf("Binder 'A' conflicts with a global declaration."),
             result.diagnostics.map { it.message },
         )
     }
