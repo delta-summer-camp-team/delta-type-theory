@@ -46,7 +46,7 @@ class TermElaborator(
 
         diagnosticReporter.reportError(
             "Type mismatch: expected $expectedType, got ${inferred.type}",
-            null,
+            term.range,
         )
         return null
     }
@@ -56,7 +56,7 @@ class TermElaborator(
 
         is SurfaceMeta -> {
             // TODO(M5): resolving metas is C10's job; surface-level output only.
-            diagnosticReporter.reportError("Unresolved meta ?${term.id}", null)
+            diagnosticReporter.reportError("Unresolved meta ?${term.id}", term.range)
             null
         }
 
@@ -70,7 +70,7 @@ class TermElaborator(
                 if (global != null) {
                     TypedCoreTerm(GlobalRef(global.name), global.type)
                 } else {
-                    diagnosticReporter.reportError("Name '$name' not found", null)
+                    diagnosticReporter.reportError("Name '$name' not found", term.range)
                     null
                 }
             }
@@ -79,13 +79,13 @@ class TermElaborator(
         is SurfacePi -> {
             val typeA = inferTerm(term.binder.type, localContext) ?: return null
             if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-                diagnosticReporter.reportError("Expected Type for Pi parameter type", null)
+                diagnosticReporter.reportError("Expected Type for Pi parameter type", term.binder.type.range)
                 return null
             }
             val extended = localContext.push(binderName(term.binder), typeA.term)
             val typeB = inferTerm(term.body, extended) ?: return null
             if (!definitionallyEqual(typeB.type, TypeTerm, elaborationContext)) {
-                diagnosticReporter.reportError("Expected Type for Pi body type", null)
+                diagnosticReporter.reportError("Expected Type for Pi body type", term.body.range)
                 return null
             }
             TypedCoreTerm(Pi(typeA.term, typeB.term), TypeTerm)
@@ -94,7 +94,7 @@ class TermElaborator(
         is SurfaceLambda -> {
             val typeA = inferTerm(term.binder.type, localContext) ?: return null
             if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-                diagnosticReporter.reportError("Expected Type for Lambda parameter type", null)
+                diagnosticReporter.reportError("Expected Type for Lambda parameter type", term.binder.type.range)
                 return null
             }
             val extended = localContext.push(binderName(term.binder), typeA.term)
@@ -106,7 +106,7 @@ class TermElaborator(
             val function = inferTerm(term.function, localContext) ?: return null
             val functionType = whnf(function.type, elaborationContext)
             if (functionType !is Pi) {
-                diagnosticReporter.reportError("Cannot apply non-function", null)
+                diagnosticReporter.reportError("Cannot apply non-function", term.function.range)
                 return null
             }
             val argument = checkTerm(term.argument, functionType.parameterType, localContext)
@@ -123,13 +123,13 @@ class TermElaborator(
     ): CoreTerm? {
         val typeA = inferTerm(term.binder.type, localContext) ?: return null
         if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-            diagnosticReporter.reportError("Expected Type for Lambda parameter type", null)
+            diagnosticReporter.reportError("Expected Type for Lambda parameter type", term.binder.type.range)
             return null
         }
         if (!definitionallyEqual(typeA.term, expectedType.parameterType, elaborationContext)) {
             diagnosticReporter.reportError(
                 "Lambda parameter type mismatch: expected ${expectedType.parameterType}, got ${typeA.term}",
-                null,
+                term.binder.range ?: term.range,
             )
             return null
         }

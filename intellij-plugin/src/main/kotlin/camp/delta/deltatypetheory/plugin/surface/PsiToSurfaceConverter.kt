@@ -1,36 +1,35 @@
 package camp.delta.deltatypetheory.plugin.surface
 
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryType
+import camp.delta.deltatypetheory.core.surface.model.SourceRange
+import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
+import camp.delta.deltatypetheory.core.surface.model.SurfaceAxiomDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
+import camp.delta.deltatypetheory.core.surface.model.SurfaceDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceDefDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
+import camp.delta.deltatypetheory.core.surface.model.SurfaceMeta
+import camp.delta.deltatypetheory.core.surface.model.SurfaceName
+import camp.delta.deltatypetheory.core.surface.model.SurfaceNameRef
+import camp.delta.deltatypetheory.core.surface.model.SurfacePi
+import camp.delta.deltatypetheory.core.surface.model.SurfaceProgram
+import camp.delta.deltatypetheory.core.surface.model.SurfaceRuleDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceTerm
+import camp.delta.deltatypetheory.core.surface.model.SurfaceTypeTerm
+import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryApplication
+import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryArrowExpr
+import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryAtom
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryAxiomDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryDefDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryExpr
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryItem
-import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryApplication
-import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryArrowExpr
-import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryAtom
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryLambdaExpr
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryPiExpr
-import camp.delta.deltatypetheory.core.surface.model.SurfaceProgram
-import camp.delta.deltatypetheory.core.surface.model.SurfaceDecl
-import camp.delta.deltatypetheory.core.surface.model.SurfaceName
-import camp.delta.deltatypetheory.core.surface.model.SurfaceAxiomDecl
-import camp.delta.deltatypetheory.core.surface.model.SurfaceDefDecl
-import camp.delta.deltatypetheory.core.surface.model.SurfaceTerm
-import camp.delta.deltatypetheory.core.surface.model.SurfaceTypeTerm
-import camp.delta.deltatypetheory.core.surface.model.SurfaceNameRef
-import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
-import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
-import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
-import camp.delta.deltatypetheory.core.surface.model.SurfaceMeta
-import camp.delta.deltatypetheory.core.surface.model.SurfacePi
-import camp.delta.deltatypetheory.core.surface.model.SurfaceRuleDecl
 import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryRuleDecl
-import camp.delta.deltatypetheory.core.surface.model.SourceRange
+import camp.delta.deltatypetheory.plugin.psi.DeltaTypeTheoryType
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 
 class PsiToSurfaceConverter {
-
     private var nextMetaNumber = 0
 
     fun convert(file: PsiFile): SurfaceProgram {
@@ -40,25 +39,22 @@ class PsiToSurfaceConverter {
         return SurfaceProgram(
             declarations = declarations.map { convertDecl(it) },
             rules = rules.map { convertRule(it) },
-            fileName = file.name
+            fileName = file.name,
         )
     }
 
-
-    private fun collectTopLevelDeclarations(file: PsiFile): List<PsiElement> {
-        return file.children.filterIsInstance<DeltaTypeTheoryItem>().mapNotNull { item ->
+    private fun collectTopLevelDeclarations(file: PsiFile): List<PsiElement> =
+        file.children.filterIsInstance<DeltaTypeTheoryItem>().mapNotNull { item ->
             item.axiomDecl ?: item.defDecl
         }
-    }
 
-    private fun collectTopLevelRules(file: PsiFile): List<PsiElement> {
-        return file.children
+    private fun collectTopLevelRules(file: PsiFile): List<PsiElement> =
+        file.children
             .filterIsInstance<DeltaTypeTheoryItem>()
             .mapNotNull { item -> item.ruleDecl }
-    }
 
-    private fun convertDecl(element: PsiElement): SurfaceDecl {
-        return when (element.node?.elementType) {
+    private fun convertDecl(element: PsiElement): SurfaceDecl =
+        when (element.node?.elementType) {
             DeltaTypeTheoryType.AXIOM_DECL -> {
                 convertAxiom(element)
             }
@@ -71,7 +67,6 @@ class PsiToSurfaceConverter {
                 error("Unknown declaration: ${element.node?.elementType}")
             }
         }
-    }
 
     private fun convertAxiom(element: PsiElement): SurfaceDecl {
         val axiom = element as DeltaTypeTheoryAxiomDecl
@@ -82,14 +77,14 @@ class PsiToSurfaceConverter {
         return SurfaceAxiomDecl(
             name = name,
             type = type,
-            range = SourceRange(
-                filePath = axiom.containingFile.name,
-                startOffset = axiom.identifier.textRange.startOffset,
-                endOffset = axiom.identifier.textRange.endOffset,
-            )
+            range =
+                SourceRange(
+                    filePath = axiom.containingFile.name,
+                    startOffset = axiom.identifier.textRange.startOffset,
+                    endOffset = axiom.identifier.textRange.endOffset,
+                ),
         )
     }
-
 
     private fun convertDef(element: PsiElement): SurfaceDecl {
         val def = element as DeltaTypeTheoryDefDecl
@@ -107,11 +102,12 @@ class PsiToSurfaceConverter {
             name = name,
             type = type,
             value = value,
-            range = SourceRange(
-                filePath = def.containingFile.name,
-                startOffset = def.identifier.textRange.startOffset,
-                endOffset = def.identifier.textRange.endOffset,
-            )
+            range =
+                SourceRange(
+                    filePath = def.containingFile.name,
+                    startOffset = def.identifier.textRange.startOffset,
+                    endOffset = def.identifier.textRange.endOffset,
+                ),
         )
     }
 
@@ -123,12 +119,13 @@ class PsiToSurfaceConverter {
             "Expected 2 expressions in rule, but got ${expressions.size}"
         }
 
-        val name = SurfaceName(
-            rule.text
-                .substringAfter("rule ")
-                .substringBefore(":")
-                .trim()
-        )
+        val name =
+            SurfaceName(
+                rule.text
+                    .substringAfter("rule ")
+                    .substringBefore(":")
+                    .trim(),
+            )
         val lhs = convertExpr(expressions[0])
         val rhs = convertExpr(expressions[1])
 
@@ -136,10 +133,9 @@ class PsiToSurfaceConverter {
             name = name,
             lhs = lhs,
             rhs = rhs,
-            range = null
+            range = rule.sourceRange(),
         )
     }
-
 
     private fun convertExpr(element: PsiElement): SurfaceTerm {
         val expr = element as DeltaTypeTheoryExpr
@@ -167,33 +163,31 @@ class PsiToSurfaceConverter {
         error("Unknown expression: ${element.text}")
     }
 
-    private fun convertApplication(
-        element: DeltaTypeTheoryApplication
-    ): SurfaceTerm {
+    private fun convertApplication(element: DeltaTypeTheoryApplication): SurfaceTerm {
         var result = convertAtom(element.atom)
 
         for (argument in element.argumentList) {
-            result = SurfaceApp(
-                result,
-                convertExpr(argument.expr)
-            )
+            result =
+                SurfaceApp(
+                    function = result,
+                    argument = convertExpr(argument.expr),
+                    range = element.sourceRange(),
+                )
         }
 
         return result
     }
 
-    private fun convertAtom(
-        element: DeltaTypeTheoryAtom
-    ): SurfaceTerm {
-
+    private fun convertAtom(element: DeltaTypeTheoryAtom): SurfaceTerm {
         element.identifier?.let { identifier ->
             val name = identifier.text
 
             return if (name == "Type") {
-                SurfaceTypeTerm
+                SurfaceTypeTerm(identifier.sourceRange())
             } else {
                 SurfaceNameRef(
-                    SurfaceName(name)
+                    name = SurfaceName(name),
+                    range = identifier.sourceRange(),
                 )
             }
         }
@@ -205,75 +199,84 @@ class PsiToSurfaceConverter {
         error("Unknown atom: ${element.text}")
     }
 
-    private fun convertLambda(
-        element: DeltaTypeTheoryLambdaExpr
-    ): SurfaceTerm {
-
+    private fun convertLambda(element: DeltaTypeTheoryLambdaExpr): SurfaceTerm {
         val expressions = element.exprList
 
         require(expressions.size in 1..2) {
             "Expected 1 or 2 expressions in lambda, but got ${expressions.size}"
         }
 
-        val binder = if (expressions.size == 2) {
-            SurfaceBinder(
-                name = SurfaceName(element.identifier.text),
-                type = convertExpr(expressions[0])
-            )
-        } else {
-            SurfaceBinder(
-                name = SurfaceName(element.identifier.text),
-                type = SurfaceMeta(nextMetaNumber++)
-            )
-        }
+        val binder =
+            if (expressions.size == 2) {
+                SurfaceBinder(
+                    name = SurfaceName(element.identifier.text),
+                    type = convertExpr(expressions[0]),
+                    range = element.identifier.sourceRange(),
+                )
+            } else {
+                SurfaceBinder(
+                    name = SurfaceName(element.identifier.text),
+                    type = SurfaceMeta(nextMetaNumber++, element.identifier.sourceRange()),
+                    range = element.identifier.sourceRange(),
+                )
+            }
 
         return SurfaceLambda(
             binder = binder,
-            body = convertExpr(expressions.last())
+            body = convertExpr(expressions.last()),
+            range = element.sourceRange(),
         )
     }
 
-    private fun convertArrowExpr(
-        element: DeltaTypeTheoryArrowExpr
-    ): SurfaceTerm {
-
+    private fun convertArrowExpr(element: DeltaTypeTheoryArrowExpr): SurfaceTerm {
         var domain = convertAtom(element.atom)
 
         for (argument in element.argumentList) {
-            domain = SurfaceApp(
-                domain,
-                convertExpr(argument.expr)
-            )
+            domain =
+                SurfaceApp(
+                    function = domain,
+                    argument = convertExpr(argument.expr),
+                    range = element.sourceRange(),
+                )
         }
 
         return SurfacePi(
-            binder = SurfaceBinder(
-                name = null,
-                type = domain
-            ),
-            body = convertExpr(element.expr)
+            binder =
+                SurfaceBinder(
+                    name = null,
+                    type = domain,
+                    range = element.sourceRange(),
+                ),
+            body = convertExpr(element.expr),
+            range = element.sourceRange(),
         )
     }
 
-    private fun convertPi(
-        element: DeltaTypeTheoryPiExpr
-    ): SurfaceTerm {
-
+    private fun convertPi(element: DeltaTypeTheoryPiExpr): SurfaceTerm {
         val expressions = element.exprList
 
         require(expressions.size == 2) {
             "Expected 2 expressions in pi, but got ${expressions.size}"
         }
 
-        val binder = SurfaceBinder(
-            name = SurfaceName(element.identifier.text),
-            type = convertExpr(expressions[0])
-        )
+        val binder =
+            SurfaceBinder(
+                name = SurfaceName(element.identifier.text),
+                type = convertExpr(expressions[0]),
+                range = element.identifier.sourceRange(),
+            )
 
         return SurfacePi(
             binder = binder,
-            body = convertExpr(expressions[1])
+            body = convertExpr(expressions[1]),
+            range = element.sourceRange(),
         )
     }
 
+    private fun PsiElement.sourceRange(): SourceRange =
+        SourceRange(
+            filePath = containingFile.name,
+            startOffset = textRange.startOffset,
+            endOffset = textRange.endOffset,
+        )
 }
