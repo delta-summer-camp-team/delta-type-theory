@@ -1,6 +1,6 @@
 package camp.delta.deltatypetheory.plugin.annotator
 
-import camp.delta.deltatypetheory.core.surface.check.StubSurfaceTypeChecker
+import camp.delta.deltatypetheory.core.surface.check.SurfaceTypeCheckerImpl
 import camp.delta.deltatypetheory.core.surface.diagnostic.SurfaceDiagnostic
 import camp.delta.deltatypetheory.core.surface.diagnostic.SurfaceDiagnosticSeverity
 import camp.delta.deltatypetheory.core.surface.model.SourceRange
@@ -17,16 +17,15 @@ import com.intellij.psi.PsiFile
 class DeltaTypeTheoryExternalAnnotator :
     ExternalAnnotator<DeltaTypeTheoryCollectedInfo, List<SurfaceDiagnostic>>(),
     DumbAware {
-
     private val converter = PsiToSurfaceConverter()
-    private val typechecker = StubSurfaceTypeChecker()
+    private val typechecker = SurfaceTypeCheckerImpl
 
     override fun collectInformation(
         file: PsiFile,
         editor: Editor,
         hasErrors: Boolean,
-    ): DeltaTypeTheoryCollectedInfo {
-        return try {
+    ): DeltaTypeTheoryCollectedInfo =
+        try {
             val program = converter.convert(file)
 
             DeltaTypeTheoryCollectedInfo(
@@ -35,24 +34,23 @@ class DeltaTypeTheoryExternalAnnotator :
         } catch (e: Exception) {
             DeltaTypeTheoryCollectedInfo(
                 program = null,
-                diagnostics = listOf(
-                    SurfaceDiagnostic(
-                        severity = SurfaceDiagnosticSeverity.Error,
-                        message = e.message ?: "Failed to convert file",
-                        range = SourceRange(
-                            filePath = file.name,
-                            startOffset = 0,
-                            endOffset = file.textLength,
+                diagnostics =
+                    listOf(
+                        SurfaceDiagnostic(
+                            severity = SurfaceDiagnosticSeverity.Error,
+                            message = e.message ?: "Failed to convert file",
+                            range =
+                                SourceRange(
+                                    filePath = file.name,
+                                    startOffset = 0,
+                                    endOffset = file.textLength,
+                                ),
                         ),
-                    )
-                ),
+                    ),
             )
         }
-    }
 
-    override fun doAnnotate(
-        collectedInfo: DeltaTypeTheoryCollectedInfo,
-    ): List<SurfaceDiagnostic> {
+    override fun doAnnotate(collectedInfo: DeltaTypeTheoryCollectedInfo): List<SurfaceDiagnostic> {
         if (collectedInfo.program == null) {
             return collectedInfo.diagnostics
         }
@@ -65,7 +63,7 @@ class DeltaTypeTheoryExternalAnnotator :
                     severity = SurfaceDiagnosticSeverity.Error,
                     message = e.message ?: "Type checking failed",
                     range = null,
-                )
+                ),
             )
         }
     }
@@ -80,19 +78,28 @@ class DeltaTypeTheoryExternalAnnotator :
         }
 
         for (diagnostic in annotationResult) {
-            val severity = when (diagnostic.severity) {
-                SurfaceDiagnosticSeverity.Error ->
-                    HighlightSeverity.ERROR
+            val severity =
+                when (diagnostic.severity) {
+                    SurfaceDiagnosticSeverity.Error -> {
+                        HighlightSeverity.ERROR
+                    }
 
-                SurfaceDiagnosticSeverity.Warning ->
-                    HighlightSeverity.WARNING
+                    SurfaceDiagnosticSeverity.Warning -> {
+                        HighlightSeverity.WARNING
+                    }
 
-                SurfaceDiagnosticSeverity.Info ->
-                    HighlightSeverity.WEAK_WARNING
-            }
+                    SurfaceDiagnosticSeverity.Info -> {
+                        HighlightSeverity.WEAK_WARNING
+                    }
+                }
 
-            val textRange = diagnostic.range?.toTextRange(file.textLength)
-                ?: continue
+            val textRange =
+                diagnostic.range?.toTextRange(file.textLength)
+                    ?: if (file.textLength > 0) {
+                        TextRange(0, 1)
+                    } else {
+                        TextRange(0, 0)
+                    }
 
             holder
                 .newAnnotation(severity, diagnostic.message)
