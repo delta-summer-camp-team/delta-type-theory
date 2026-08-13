@@ -7,29 +7,11 @@ object DoomMode {
 
     private val activeGames = mutableMapOf<Editor, Process>()
 
-    /*
-     * Change this to the location of your Chocolate Doom executable.
-     *
-     * Windows example:
-     * C:\Games\Chocolate-Doom\chocolate-doom.exe
-     *
-     * Linux example:
-     * /usr/bin/chocolate-doom
-     *
-     * macOS example:
-     * /usr/local/bin/chocolate-doom
-     */
     private val chocolateDoomExecutable =
-        "/nedlastinger/chocolate-doom-master/"
+        """C:\Users\Viktor\Downloads\chocolate-doom-3.1.1-win64\chocolate-doom.exe"""
 
-    /*
-     * Change this to your actual DOOM.WAD.
-     *
-     * Do not put a commercial DOOM.WAD into the plugin repository.
-     */
     private val iwadPath =
-        File(System.getProperty("user.home"), "doom/DOOM.WAD")
-
+        File("""C:\Users\Viktor\Downloads\doom\DOOM.WAD""")
     fun activate(editor: Editor) {
 
         // Don't start two Doom processes for the same editor.

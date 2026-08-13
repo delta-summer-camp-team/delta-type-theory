@@ -79,4 +79,9 @@
 
     </extensions>package camp.delta.deltatypetheory.plugin
 
+    <extensions defaultExtensionNs="com.intellij">
+        <typedHandler
+                implementation="camp.delta.deltatypetheory.plugin.BracketHandler"/>
+    </extensions>
+
 </idea-plugin>

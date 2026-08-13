@@ -40,7 +40,13 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
                 declarations = listOf(
                     SurfaceAxiomDecl(
                         name = SurfaceName("Nat"),
-                        type = SurfaceTypeTerm,
+                        type = SurfaceTypeTerm(
+                            range = range(
+                                "test.delta",
+                                12,
+                                16,
+                            ),
+                        ),
                         range = range(
                             "test.delta",
                             6,
@@ -72,12 +78,33 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         val second = result.declarations[1] as SurfaceAxiomDecl
 
         assertEquals(SurfaceName("Nat"), first.name)
-        assertEquals(SurfaceTypeTerm, first.type)
+
+        assertEquals(
+            SurfaceTypeTerm(
+                range = range(
+                    "test.delta",
+                    12,
+                    16,
+                ),
+            ),
+            first.type,
+        )
 
         assertEquals(SurfaceName("Bool"), second.name)
-        assertEquals(SurfaceTypeTerm, second.type)
 
-        // Ranges are produced by the converter, so just verify they exist.
+        // "axiom Bool : Type;" starts at offset 21.
+        // Type starts at 27 and ends at 31.
+        assertEquals(
+            SurfaceTypeTerm(
+                range = range(
+                    "test.delta",
+                    27,
+                    31,
+                ),
+            ),
+            second.type,
+        )
+
         assertEquals(
             range("test.delta", 6, 9),
             first.range,

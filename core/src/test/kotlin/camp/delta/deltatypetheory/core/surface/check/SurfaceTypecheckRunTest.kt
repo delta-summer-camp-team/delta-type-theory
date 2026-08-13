@@ -23,7 +23,7 @@ class SurfaceTypecheckRunTest {
   //   axiom zero : Nat;
   //   axiom succ : (n : Nat) → Nat;
   private fun natProgram(extra: List<SurfaceAxiomDecl> = emptyList()): SurfaceProgram {
-    val nat = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm, null)
+    val nat = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm(), null)
     val zero = SurfaceAxiomDecl(name("zero"), SurfaceNameRef(name("Nat")), null)
     val succType = SurfacePi(
       SurfaceBinder(name("n"), SurfaceNameRef(name("Nat"))),
@@ -84,7 +84,7 @@ class SurfaceTypecheckRunTest {
 
   @Test
   fun duplicateNameIsRejected() {
-    val dup = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm, null)
+    val dup = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm(), null)
     val program = SurfaceProgram(
       declarations = natProgram().declarations + dup,
       rules = emptyList(),
