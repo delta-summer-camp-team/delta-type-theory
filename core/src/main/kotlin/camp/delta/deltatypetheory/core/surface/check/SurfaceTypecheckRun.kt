@@ -29,14 +29,19 @@ class SurfaceTypecheckRun {
 
     fun check(program: SurfaceProgram): SurfaceCheckResult {
         for (declaration in program.declarations) {
-            when (declaration) {
-                is SurfaceAxiomDecl -> elaborateAxiom(declaration)
-                is SurfaceDefDecl -> elaborateDef(declaration)
+            if (declaration is SurfaceAxiomDecl) {
+                elaborateAxiom(declaration)
             }
         }
 
         for (rule in program.rules) {
             elaborateRule(rule)
+        }
+
+        for (declaration in program.declarations) {
+            if (declaration is SurfaceDefDecl) {
+                elaborateDef(declaration)
+            }
         }
 
         return SurfaceCheckResult(diagnosticReporter.all())

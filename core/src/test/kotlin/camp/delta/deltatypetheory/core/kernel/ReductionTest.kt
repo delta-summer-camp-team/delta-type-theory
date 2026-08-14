@@ -286,4 +286,61 @@ class ReductionTest {
       whnf(term, ctx),
     )
   }
+
+  @Test
+  fun `definitionally equal uses user rules`() {
+    val ctx = ElaborationContext()
+
+    val natRec = GlobalRef(GlobalName("natRec"))
+    val zero = GlobalRef(GlobalName("zero"))
+
+    val p = GlobalName("P")
+    val z = GlobalName("z")
+    val s = GlobalName("s")
+
+    val lhs =
+      App(
+        App(
+          App(
+            App(natRec, GlobalRef(p)),
+            GlobalRef(z),
+          ),
+          GlobalRef(s),
+        ),
+        zero,
+      )
+
+    ctx.addRule(
+      CoreRule(
+        name = "natRec.zero",
+        lhs = lhs,
+        rhs = GlobalRef(z),
+        variables = setOf(p, z, s),
+      )
+    )
+
+    val nat = GlobalRef(GlobalName("Nat"))
+    val base = GlobalRef(GlobalName("base"))
+    val step = GlobalRef(GlobalName("step"))
+
+    val term =
+      App(
+        App(
+          App(
+            App(natRec, nat),
+            base,
+          ),
+          step,
+        ),
+        zero,
+      )
+
+    assertTrue(
+      definitionallyEqual(
+        term,
+        base,
+        ctx,
+      )
+    )
+  }
 }

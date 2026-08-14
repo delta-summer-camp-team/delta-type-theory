@@ -87,15 +87,10 @@ class TermElaborator(
                 reportExpectedType(term.binder.type, typeA.type)
                 return null
             }
-            val extended =
-                if (term.binder.name != null) {
-                    localContext.push(
-                        term.binder.name.value,
-                        typeA.term,
-                    )
-                } else {
-                    localContext
-                }
+            val extended = localContext.push(
+                binderName(term.binder),
+                typeA.term,
+            )
             val typeB = inferTerm(term.body, extended) ?: return null
             if (!definitionallyEqual(typeB.type, TypeTerm, elaborationContext)) {
                 reportExpectedType(term.body, typeB.type)

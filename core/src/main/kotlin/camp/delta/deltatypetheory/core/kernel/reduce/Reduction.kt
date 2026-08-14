@@ -129,13 +129,40 @@ fun whnf(
 fun normalize(
     term: CoreTerm,
     ctx: ElaborationContext,
-): CoreTerm = normalize(term) { name -> ctx.lookupGlobal(name.value)?.value }
+): CoreTerm =
+    when (val head = whnf(term, ctx)) {
+        is Pi -> {
+            Pi(
+                normalize(head.parameterType, ctx),
+                normalize(head.body, ctx),
+            )
+        }
+
+        is Lambda -> {
+            Lambda(
+                normalize(head.parameterType, ctx),
+                normalize(head.body, ctx),
+            )
+        }
+
+        is App -> {
+            App(
+                normalize(head.function, ctx),
+                normalize(head.argument, ctx),
+            )
+        }
+
+        else -> {
+            head
+        }
+    }
 
 fun definitionallyEqual(
     left: CoreTerm,
     right: CoreTerm,
     ctx: ElaborationContext,
-): Boolean = definitionallyEqual(left, right) { name -> ctx.lookupGlobal(name.value)?.value }
+): Boolean =
+    normalize(left, ctx) == normalize(right, ctx)
 
 // ---------------------------------------------------------------
 // Внутренние помощники C6: минимальная подстановка для бета-редукции.

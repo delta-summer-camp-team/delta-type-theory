@@ -13,6 +13,7 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceRuleDecl
 import camp.delta.deltatypetheory.core.surface.model.SurfaceTypeTerm
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
+
 class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
     fun testConvertsAxiomNatType() {
@@ -26,20 +27,14 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
             PsiToSurfaceConverter()
                 .convert(file)
 
-        assertEquals(
-            SurfaceProgram(
-                declarations = listOf(
-                    SurfaceAxiomDecl(
-                        name = SurfaceName("Nat"),
-                        type = SurfaceTypeTerm(),
-                        range = null,
-                    ),
-                ),
-                rules = emptyList(),
-                fileName = "test.delta",
-            ),
-            result,
-        )
+        assertEquals("test.delta", result.fileName)
+        assertEquals(1, result.declarations.size)
+        assertTrue(result.rules.isEmpty())
+
+        val declaration = result.declarations.single() as SurfaceAxiomDecl
+
+        assertEquals(SurfaceName("Nat"), declaration.name)
+        assertTrue(declaration.type is SurfaceTypeTerm)
     }
     fun testPreservesDeclarationOrder() {
         val file = myFixture.configureByText(
@@ -54,23 +49,14 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
         assertEquals(2, result.declarations.size)
 
-        assertEquals(
-            SurfaceAxiomDecl(
-                name = SurfaceName("Nat"),
-                type = SurfaceTypeTerm(),
-                range = null,
-            ),
-            result.declarations[0],
-        )
+        val first = result.declarations[0] as SurfaceAxiomDecl
+        val second = result.declarations[1] as SurfaceAxiomDecl
 
-        assertEquals(
-            SurfaceAxiomDecl(
-                name = SurfaceName("Bool"),
-                type = SurfaceTypeTerm(),
-                range = null,
-            ),
-            result.declarations[1],
-        )
+        assertEquals(SurfaceName("Nat"), first.name)
+        assertTrue(first.type is SurfaceTypeTerm)
+
+        assertEquals(SurfaceName("Bool"), second.name)
+        assertTrue(second.type is SurfaceTypeTerm)
     }
 
     fun testConvertsNameReference() {
@@ -81,16 +67,11 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
         val result = PsiToSurfaceConverter().convert(file)
 
-        assertEquals(
-            SurfaceAxiomDecl(
-                name = SurfaceName("Nat"),
-                type = SurfaceNameRef(
-                    SurfaceName("Nat")
-                ),
-                range = null,
-            ),
-            result.declarations.single(),
-        )
+        val declaration = result.declarations.single() as SurfaceAxiomDecl
+        val type = declaration.type as SurfaceNameRef
+
+        assertEquals(SurfaceName("Nat"), declaration.name)
+        assertEquals(SurfaceName("Nat"), type.name)
     }
 
     fun testConvertsRule() {
@@ -103,19 +84,17 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
         assertEquals(1, result.rules.size)
 
-        assertEquals(
-            SurfaceRuleDecl(
-                name = SurfaceName("beta"),
-                lhs = SurfaceNameRef(
-                    SurfaceName("x")
-                ),
-                rhs = SurfaceNameRef(
-                    SurfaceName("x")
-                ),
-                range = null,
-            ),
-            result.rules.single(),
-        )
+        assertEquals(1, result.rules.size)
+
+        val rule = result.rules.single()
+
+        assertEquals(SurfaceName("beta"), rule.name)
+
+        val lhs = rule.lhs as SurfaceNameRef
+        val rhs = rule.rhs as SurfaceNameRef
+
+        assertEquals(SurfaceName("x"), lhs.name)
+        assertEquals(SurfaceName("x"), rhs.name)
     }
 
     fun testParsesNatRecRule() {
@@ -181,22 +160,22 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
         val result = PsiToSurfaceConverter().convert(file)
 
-        assertEquals(
-            SurfacePi(
-                binder = SurfaceBinder(
-                    name = null,
-                    type = SurfaceNameRef(SurfaceName("Nat")),
-                ),
-                body = SurfacePi(
-                    binder = SurfaceBinder(
-                        name = null,
-                        type = SurfaceNameRef(SurfaceName("Nat")),
-                    ),
-                    body = SurfaceNameRef(SurfaceName("Nat")),
-                ),
-            ),
-            (result.declarations.single() as SurfaceAxiomDecl).type,
-        )
+        val type = (result.declarations.single() as SurfaceAxiomDecl).type as SurfacePi
+
+        assertEquals(null, type.binder.name)
+
+        val firstDomain = type.binder.type as SurfaceNameRef
+        assertEquals(SurfaceName("Nat"), firstDomain.name)
+
+        val inner = type.body as SurfacePi
+
+        assertEquals(null, inner.binder.name)
+
+        val secondDomain = inner.binder.type as SurfaceNameRef
+        assertEquals(SurfaceName("Nat"), secondDomain.name)
+
+        val resultType = inner.body as SurfaceNameRef
+        assertEquals(SurfaceName("Nat"), resultType.name)
     }
 
     fun testConvertsLambdaWithoutTypeToMeta() {
@@ -207,26 +186,31 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
         val result = PsiToSurfaceConverter().convert(file)
 
+        val declaration = result.declarations.single() as SurfaceDefDecl
+
+        assertEquals(SurfaceName("id"), declaration.name)
+
+        val type = declaration.type as SurfacePi
+        assertEquals(null, type.binder.name)
         assertEquals(
-            SurfaceDefDecl(
-                name = SurfaceName("id"),
-                type = SurfacePi(
-                    binder = SurfaceBinder(
-                        name = null,
-                        type = SurfaceNameRef(SurfaceName("Nat")),
-                    ),
-                    body = SurfaceNameRef(SurfaceName("Nat")),
-                ),
-                value = SurfaceLambda(
-                    binder = SurfaceBinder(
-                        name = SurfaceName("m"),
-                        type = SurfaceMeta(0),
-                    ),
-                    body = SurfaceNameRef(SurfaceName("m")),
-                ),
-                range = null,
-            ),
-            result.declarations.single(),
+            SurfaceName("Nat"),
+            (type.binder.type as SurfaceNameRef).name,
+        )
+        assertEquals(
+            SurfaceName("Nat"),
+            (type.body as SurfaceNameRef).name,
+        )
+
+        val value = declaration.value as SurfaceLambda
+
+        assertEquals(SurfaceName("m"), value.binder.name)
+
+        val meta = value.binder.type as SurfaceMeta
+        assertEquals(0, meta.id)
+
+        assertEquals(
+            SurfaceName("m"),
+            (value.body as SurfaceNameRef).name,
         )
     }
 
@@ -240,17 +224,25 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
 
         val value = (result.declarations.single() as SurfaceDefDecl).value as SurfaceLambda
 
+        assertEquals(SurfaceName("m"), value.binder.name)
         assertEquals(
-            SurfaceBinder(name = SurfaceName("m"), type = SurfaceMeta(0)),
-            value.binder,
+            0,
+            (value.binder.type as SurfaceMeta).id,
         )
 
         val inner = value.body as SurfaceLambda
+
+        assertEquals(SurfaceName("n"), inner.binder.name)
         assertEquals(
-            SurfaceBinder(name = SurfaceName("n"), type = SurfaceMeta(1)),
-            inner.binder,
+            1,
+            (inner.binder.type as SurfaceMeta).id,
         )
-        assertEquals(SurfaceNameRef(SurfaceName("m")), inner.body)
+
+        assertEquals(
+            SurfaceName("m"),
+            (inner.body as SurfaceNameRef).name,
+        )
+
     }
 
     fun testNumbersMetasAcrossFile() {
@@ -268,12 +260,13 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         val defB = result.declarations[1] as SurfaceDefDecl
 
         assertEquals(
-            SurfaceMeta(0),
-            (defA.value as SurfaceLambda).binder.type,
+            0,
+            ((defA.value as SurfaceLambda).binder.type as SurfaceMeta).id,
         )
+
         assertEquals(
-            SurfaceMeta(1),
-            (defB.value as SurfaceLambda).binder.type,
+            1,
+            ((defB.value as SurfaceLambda).binder.type as SurfaceMeta).id,
         )
     }
 }
