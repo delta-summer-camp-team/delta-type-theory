@@ -31,7 +31,7 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
                 declarations = listOf(
                     SurfaceAxiomDecl(
                         name = SurfaceName("Nat"),
-                        type = SurfaceTypeTerm,
+                        type = SurfaceTypeTerm(),
                         range = null,
                     ),
                 ),
@@ -57,7 +57,7 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         assertEquals(
             SurfaceAxiomDecl(
                 name = SurfaceName("Nat"),
-                type = SurfaceTypeTerm,
+                type = SurfaceTypeTerm(),
                 range = null,
             ),
             result.declarations[0],
@@ -66,7 +66,7 @@ class PsiToSurfaceConverterTest : BasePlatformTestCase() {
         assertEquals(
             SurfaceAxiomDecl(
                 name = SurfaceName("Bool"),
-                type = SurfaceTypeTerm,
+                type = SurfaceTypeTerm(),
                 range = null,
             ),
             result.declarations[1],

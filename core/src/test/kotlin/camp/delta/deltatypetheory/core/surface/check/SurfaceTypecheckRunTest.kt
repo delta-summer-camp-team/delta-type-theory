@@ -5,6 +5,7 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
 import camp.delta.deltatypetheory.core.surface.model.SurfaceAxiomDecl
 import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
 import camp.delta.deltatypetheory.core.surface.model.SurfaceDefDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
 import camp.delta.deltatypetheory.core.surface.model.SurfaceName
 import camp.delta.deltatypetheory.core.surface.model.SurfaceNameRef
 import camp.delta.deltatypetheory.core.surface.model.SurfacePi
@@ -23,7 +24,7 @@ class SurfaceTypecheckRunTest {
   //   axiom zero : Nat;
   //   axiom succ : (n : Nat) → Nat;
   private fun natProgram(extra: List<SurfaceAxiomDecl> = emptyList()): SurfaceProgram {
-    val nat = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm, null)
+    val nat = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm(), null)
     val zero = SurfaceAxiomDecl(name("zero"), SurfaceNameRef(name("Nat")), null)
     val succType = SurfacePi(
       SurfaceBinder(name("n"), SurfaceNameRef(name("Nat"))),
@@ -65,6 +66,42 @@ class SurfaceTypecheckRunTest {
   }
 
   @Test
+  fun dependentFunctionDefinitionWithAnonymousPiIsAccepted() {
+    // def for_all_A_from_A_A : (T : Type) -> (T -> T) :=
+    //   lambda (Xi : Type) => lambda (d : Xi) => d;
+    val t = name("T")
+    val xi = name("Xi")
+    val d = name("d")
+    val declaration = SurfaceDefDecl(
+      name("for_all_A_from_A_A"),
+      SurfacePi(
+        SurfaceBinder(t, SurfaceTypeTerm()),
+        SurfacePi(
+          SurfaceBinder(null, SurfaceNameRef(t)),
+          SurfaceNameRef(t),
+        ),
+      ),
+      SurfaceLambda(
+        SurfaceBinder(xi, SurfaceTypeTerm()),
+        SurfaceLambda(
+          SurfaceBinder(d, SurfaceNameRef(xi)),
+          SurfaceNameRef(d),
+        ),
+      ),
+      null,
+    )
+    val program = SurfaceProgram(
+      declarations = listOf(declaration),
+      rules = emptyList(),
+      fileName = null,
+    )
+
+    val result = SurfaceTypeCheckerImpl.check(program)
+
+    assertFalse(result.diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error })
+  }
+
+  @Test
   fun definitionWithWrongTypeIsRejected() {
     // def bad : zero := zero; -- у zero тип Nat, а не zero, поэтому ошибка
     val bad = SurfaceDefDecl(
@@ -84,7 +121,7 @@ class SurfaceTypecheckRunTest {
 
   @Test
   fun duplicateNameIsRejected() {
-    val dup = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm, null)
+    val dup = SurfaceAxiomDecl(name("Nat"), SurfaceTypeTerm(), null)
     val program = SurfaceProgram(
       declarations = natProgram().declarations + dup,
       rules = emptyList(),

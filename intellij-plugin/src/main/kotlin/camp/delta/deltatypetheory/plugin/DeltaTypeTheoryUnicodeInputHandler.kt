@@ -6,7 +6,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class DeltaTypeTheoryUnicodeInputHandler : TypedHandlerDelegate () {
+class   DeltaTypeTheoryUnicodeInputHandler : TypedHandlerDelegate () {
 
     //replacements LaTeX to unicode symbols
     private val replacements = mapOf(
@@ -16,6 +16,17 @@ class DeltaTypeTheoryUnicodeInputHandler : TypedHandlerDelegate () {
         "\\forall" to "∀",
         "\\exists" to "∃",
         "\\rule" to "↦",
+        "\\anton" to "\uD83D\uDE0D",
+        "\\german" to "\uD83C\uDFC6",
+        "\\plugin" to "\uD83D\uDE00",
+        "\\surface" to "\uD83D\uDE28",
+        "\\core" to "\uD83E\uDD2C",
+        "\\konstantin" to "\uD83D\uDC10",
+        "\\viktor" to "Bye\uD83E\uDD2B\uD83E\uDDCF\uD83C\uDFFB\u200D♂\uFE0FBye\uD83D\uDDFF",
+        "\\pain" to "λ",
+        "\\type-theory" to "☝\uFE0F\uD83E\uDD13",
+
+
     )
 
     override fun charTyped (

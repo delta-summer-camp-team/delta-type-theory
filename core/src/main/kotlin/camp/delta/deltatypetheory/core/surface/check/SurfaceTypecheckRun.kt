@@ -45,7 +45,7 @@ class SurfaceTypecheckRun {
     private fun elaborateAxiom(declaration: SurfaceAxiomDecl) {
         val name = declaration.name.value
         if (elaborationContext.lookupGlobal(name) != null) {
-            diagnosticReporter.reportError("Name '$name' already declared", declaration.range)
+            diagnosticReporter.reportError("Duplicate declaration '$name'.", declaration.range)
             return
         }
         val type = termElaborator.checkTerm(declaration.type, TypeTerm, LocalContext()) ?: return
@@ -55,7 +55,7 @@ class SurfaceTypecheckRun {
     private fun elaborateDef(declaration: SurfaceDefDecl) {
         val name = declaration.name.value
         if (elaborationContext.lookupGlobal(name) != null) {
-            diagnosticReporter.reportError("Name '$name' already declared", declaration.range)
+            diagnosticReporter.reportError("Duplicate declaration '$name'.", declaration.range)
             return
         }
         val type: CoreTerm = termElaborator.checkTerm(declaration.type, TypeTerm, LocalContext())

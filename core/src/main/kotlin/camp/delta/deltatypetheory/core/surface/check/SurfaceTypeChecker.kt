@@ -41,7 +41,7 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
 
         if (name in usedGlobalNames) {
             reporter.reportError(
-                "Name ${name.value} already used for another $type",
+                "Duplicate $type declaration '${name.value}'.",
                 declaration.range,
             )
         } else {
@@ -120,13 +120,13 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
             is SurfaceNameRef -> {
                 if (term.name in usedGlobalNames) {
                     reporter.reportError(
-                        "Name ${term.name.value} already used globally",
-                        null,
+                        "Reference '${term.name.value}' conflicts with a global declaration.",
+                        term.range,
                     )
                 } else if (term.name in usedLocalNames) {
                     reporter.reportError(
-                        "Name ${term.name.value} already used in an outer binder",
-                        null,
+                        "Reference '${term.name.value}' conflicts with an enclosing binder.",
+                        term.range,
                     )
                 }
             }
@@ -158,13 +158,13 @@ class StubSurfaceTypeChecker : SurfaceTypeChecker {
 
         if (name in usedGlobalNames) {
             reporter.reportError(
-                "Name ${name.value} already used globally",
-                null,
+                "Binder '${name.value}' conflicts with a global declaration.",
+                binder.range,
             )
         } else if (name in usedLocalNames) {
             reporter.reportError(
-                "Name ${name.value} already used in an outer binder",
-                null,
+                "Binder '${name.value}' conflicts with an enclosing binder.",
+                binder.range,
             )
         } else {
             usedLocalNames.addLast(name)

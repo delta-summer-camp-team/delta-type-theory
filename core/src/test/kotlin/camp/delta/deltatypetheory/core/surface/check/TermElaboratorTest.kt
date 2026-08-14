@@ -50,7 +50,7 @@ class TermElaboratorTest {
     @Test
     fun inferTypeTerm() {
         val (elab, _) = makeElab()
-        val result = elab.inferTerm(SurfaceTypeTerm, LocalContext())
+        val result = elab.inferTerm(SurfaceTypeTerm(), LocalContext())
         assertNotNull(result)
         assertEquals(TypeTerm, result.type)
     }
@@ -87,6 +87,7 @@ class TermElaboratorTest {
         val result = elab.inferTerm(SurfaceNameRef(SurfaceName("unknown")), LocalContext())
         assertNull(result)
         assertTrue(reporter.hasErrors())
+        assertEquals("Unknown name 'unknown'.", reporter.all().single().message)
     }
 
     // ── inferTerm: Pi ─────────────────────────────────
@@ -142,6 +143,10 @@ class TermElaboratorTest {
         val result = elab.inferTerm(app, LocalContext())
         assertNull(result)
         assertTrue(reporter.hasErrors())
+        assertEquals(
+            "Cannot apply 'zero': it has type 'Nat', but a function type is required.",
+            reporter.all().single().message,
+        )
     }
 
     // ── checkTerm ─────────────────────────────────────
@@ -149,7 +154,7 @@ class TermElaboratorTest {
     @Test
     fun checkTypeMatches() {
         val (elab, _) = makeElab()
-        val result = elab.checkTerm(SurfaceTypeTerm, TypeTerm, LocalContext())
+        val result = elab.checkTerm(SurfaceTypeTerm(), TypeTerm, LocalContext())
         assertNotNull(result)
         assertEquals(TypeTerm, result)
     }
@@ -158,12 +163,16 @@ class TermElaboratorTest {
     fun checkTypeMismatch() {
         val (elab, reporter) = makeElab()
         val result = elab.checkTerm(
-            SurfaceTypeTerm,
+            SurfaceTypeTerm(),
             GlobalRef(nat),
             LocalContext(),
         )
         assertNull(result)
         assertTrue(reporter.hasErrors())
+        assertEquals(
+            "Type mismatch: 'Type' has type 'Type', but is expected to have type 'Nat'.",
+            reporter.all().single().message,
+        )
     }
 
     // ── checkLambdaAgainstPi ──────────────────────────

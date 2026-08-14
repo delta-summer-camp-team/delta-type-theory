@@ -18,6 +18,7 @@ psiImplPackage="camp.delta.deltatypetheory.plugin.psi.impl"
     RULE_ARROW   = '↦'
     EQUAL          = ':='
     TO             = '->'
+    TO             = '→'
     FOLLOWS        = '=>'
     LAMBDA         = 'λ'
     COLON          = ':'
