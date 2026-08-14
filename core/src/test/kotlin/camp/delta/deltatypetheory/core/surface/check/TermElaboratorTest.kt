@@ -85,6 +85,7 @@ class TermElaboratorTest {
         val result = elab.inferTerm(SurfaceNameRef(SurfaceName("unknown")), LocalContext())
         assertNull(result)
         assertTrue(reporter.hasErrors())
+        assertEquals("Unknown name 'unknown'.", reporter.all().single().message)
     }
 
     // ── inferTerm: Pi ─────────────────────────────────
@@ -140,6 +141,10 @@ class TermElaboratorTest {
         val result = elab.inferTerm(app, LocalContext())
         assertNull(result)
         assertTrue(reporter.hasErrors())
+        assertEquals(
+            "Cannot apply 'zero': it has type 'Nat', but a function type is required.",
+            reporter.all().single().message,
+        )
     }
 
     // ── checkTerm ─────────────────────────────────────
@@ -162,6 +167,10 @@ class TermElaboratorTest {
         )
         assertNull(result)
         assertTrue(reporter.hasErrors())
+        assertEquals(
+            "Type mismatch: 'Type' has type 'Type', but is expected to have type 'Nat'.",
+            reporter.all().single().message,
+        )
     }
 
     // ── checkLambdaAgainstPi ──────────────────────────

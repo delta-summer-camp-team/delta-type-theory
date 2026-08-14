@@ -6,6 +6,7 @@ import camp.delta.deltatypetheory.core.kernel.model.App
 import camp.delta.deltatypetheory.core.kernel.model.BoundVar
 import camp.delta.deltatypetheory.core.kernel.model.CoreTerm
 import camp.delta.deltatypetheory.core.kernel.model.GlobalRef
+import camp.delta.deltatypetheory.core.kernel.model.GlobalName
 import camp.delta.deltatypetheory.core.kernel.model.Lambda
 import camp.delta.deltatypetheory.core.kernel.model.Pi
 import camp.delta.deltatypetheory.core.kernel.model.TypeTerm
@@ -45,7 +46,8 @@ class TermElaborator(
         }
 
         diagnosticReporter.reportError(
-            "Type mismatch: expected $expectedType, got ${inferred.type}",
+            "Type mismatch: '${formatSurfaceTerm(term)}' has type '${formatCoreTerm(inferred.type)}', " +
+                "but is expected to have type '${formatCoreTerm(expectedType)}'.",
             term.range,
         )
         return null
@@ -56,7 +58,10 @@ class TermElaborator(
 
         is SurfaceMeta -> {
             // TODO(M5): resolving metas is C10's job; surface-level output only.
-            diagnosticReporter.reportError("Unresolved meta ?${term.id}", term.range)
+            diagnosticReporter.reportError(
+                "Cannot infer a type for metavariable '?${term.id}'.",
+                term.range,
+            )
             null
         }
 
@@ -70,7 +75,7 @@ class TermElaborator(
                 if (global != null) {
                     TypedCoreTerm(GlobalRef(global.name), global.type)
                 } else {
-                    diagnosticReporter.reportError("Name '$name' not found", term.range)
+                    diagnosticReporter.reportError("Unknown name '$name'.", term.range)
                     null
                 }
             }
@@ -79,13 +84,13 @@ class TermElaborator(
         is SurfacePi -> {
             val typeA = inferTerm(term.binder.type, localContext) ?: return null
             if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-                diagnosticReporter.reportError("Expected Type for Pi parameter type", term.binder.type.range)
+                reportExpectedType(term.binder.type, typeA.type)
                 return null
             }
             val extended = localContext.push(binderName(term.binder), typeA.term)
             val typeB = inferTerm(term.body, extended) ?: return null
             if (!definitionallyEqual(typeB.type, TypeTerm, elaborationContext)) {
-                diagnosticReporter.reportError("Expected Type for Pi body type", term.body.range)
+                reportExpectedType(term.body, typeB.type)
                 return null
             }
             TypedCoreTerm(Pi(typeA.term, typeB.term), TypeTerm)
@@ -94,7 +99,7 @@ class TermElaborator(
         is SurfaceLambda -> {
             val typeA = inferTerm(term.binder.type, localContext) ?: return null
             if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-                diagnosticReporter.reportError("Expected Type for Lambda parameter type", term.binder.type.range)
+                reportExpectedType(term.binder.type, typeA.type)
                 return null
             }
             val extended = localContext.push(binderName(term.binder), typeA.term)
@@ -106,7 +111,11 @@ class TermElaborator(
             val function = inferTerm(term.function, localContext) ?: return null
             val functionType = whnf(function.type, elaborationContext)
             if (functionType !is Pi) {
-                diagnosticReporter.reportError("Cannot apply non-function", term.function.range)
+                diagnosticReporter.reportError(
+                    "Cannot apply '${formatSurfaceTerm(term.function)}': it has type " +
+                        "'${formatCoreTerm(function.type)}', but a function type is required.",
+                    term.function.range,
+                )
                 return null
             }
             val argument = checkTerm(term.argument, functionType.parameterType, localContext)
@@ -123,12 +132,13 @@ class TermElaborator(
     ): CoreTerm? {
         val typeA = inferTerm(term.binder.type, localContext) ?: return null
         if (!definitionallyEqual(typeA.type, TypeTerm, elaborationContext)) {
-            diagnosticReporter.reportError("Expected Type for Lambda parameter type", term.binder.type.range)
+            reportExpectedType(term.binder.type, typeA.type)
             return null
         }
         if (!definitionallyEqual(typeA.term, expectedType.parameterType, elaborationContext)) {
             diagnosticReporter.reportError(
-                "Lambda parameter type mismatch: expected ${expectedType.parameterType}, got ${typeA.term}",
+                "Lambda parameter type mismatch: expected '${formatCoreTerm(expectedType.parameterType)}', " +
+                    "but the annotation is '${formatCoreTerm(typeA.term)}'.",
                 term.binder.range ?: term.range,
             )
             return null
@@ -139,4 +149,30 @@ class TermElaborator(
     }
 
     private fun binderName(binder: SurfaceBinder): String = binder.name?.value ?: "_"
+
+    private fun reportExpectedType(term: SurfaceTerm, actualType: CoreTerm) {
+        diagnosticReporter.reportError(
+            "Expected a type, but '${formatSurfaceTerm(term)}' has type '${formatCoreTerm(actualType)}'.",
+            term.range,
+        )
+    }
+
+    private fun formatSurfaceTerm(term: SurfaceTerm): String = when (term) {
+        is SurfaceTypeTerm -> "Type"
+        is SurfaceNameRef -> term.name.value
+        is SurfaceMeta -> "?${term.id}"
+        is SurfacePi -> "(${formatSurfaceTerm(term.binder.type)}) → ${formatSurfaceTerm(term.body)}"
+        is SurfaceLambda -> "λ (${binderName(term.binder)} : ${formatSurfaceTerm(term.binder.type)}). ${formatSurfaceTerm(term.body)}"
+        is SurfaceApp -> "${formatSurfaceTerm(term.function)}(${formatSurfaceTerm(term.argument)})"
+    }
+
+    private fun formatCoreTerm(term: CoreTerm): String = when (term) {
+        TypeTerm -> "Type"
+        is GlobalRef -> term.name.value
+        is GlobalName -> term.value
+        is BoundVar -> "local variable #${term.index}"
+        is Pi -> "(${formatCoreTerm(term.parameterType)}) → ${formatCoreTerm(term.body)}"
+        is Lambda -> "λ (_ : ${formatCoreTerm(term.parameterType)}). ${formatCoreTerm(term.body)}"
+        is App -> "${formatCoreTerm(term.function)}(${formatCoreTerm(term.argument)})"
+    }
 }
