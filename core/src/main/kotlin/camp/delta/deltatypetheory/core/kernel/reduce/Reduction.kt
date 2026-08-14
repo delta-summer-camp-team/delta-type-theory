@@ -112,9 +112,40 @@ fun whnf(
     term: CoreTerm,
     ctx: ElaborationContext,
 ): CoreTerm {
-    val reduced = whnf(term) { name ->
-        ctx.lookupGlobal(name.value)?.value
-    }
+    val reduced =
+        when (term) {
+            is TypeTerm -> term
+
+            is BoundVar -> term
+
+            is GlobalRef -> {
+                val value = ctx.lookupGlobal(term.name.value)?.value
+                if (value != null) {
+                    whnf(value, ctx)
+                } else {
+                    term
+                }
+            }
+
+            is Lambda -> term
+
+            is Pi -> term
+
+            is App -> {
+                val function = whnf(term.function, ctx)
+
+                if (function is Lambda) {
+                    return whnf(
+                        substituteTop(function.body, term.argument),
+                        ctx,
+                    )
+                }
+
+                App(function, term.argument)
+            }
+
+            is GlobalName -> term
+        }
 
     for (rule in ctx.rules) {
         val rewritten = applyRule(rule, reduced)

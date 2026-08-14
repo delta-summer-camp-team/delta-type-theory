@@ -343,4 +343,63 @@ class ReductionTest {
       )
     )
   }
+
+  @Test
+  fun `whnf applies rule inside application function`() {
+    val ctx = ElaborationContext()
+
+    val natRec = GlobalRef(GlobalName("natRec"))
+    val zero = GlobalRef(GlobalName("zero"))
+
+    val p = GlobalName("P")
+    val z = GlobalName("z")
+    val s = GlobalName("s")
+
+    val lhs =
+      App(
+        App(
+          App(
+            App(natRec, GlobalRef(p)),
+            GlobalRef(z),
+          ),
+          GlobalRef(s),
+        ),
+        zero,
+      )
+
+    ctx.addRule(
+      CoreRule(
+        name = "natRec.zero",
+        lhs = lhs,
+        rhs = GlobalRef(z),
+        variables = setOf(p, z, s),
+      )
+    )
+
+    val identity =
+      Lambda(
+        TypeTerm,
+        BoundVar(0),
+      )
+
+    val term =
+      App(
+        App(
+          App(
+            App(
+              App(natRec, TypeTerm),
+              identity,
+            ),
+            GlobalRef(GlobalName("step")),
+          ),
+          zero,
+        ),
+        TypeTerm,
+      )
+
+    assertEquals(
+      TypeTerm,
+      whnf(term, ctx),
+    )
+  }
 }
