@@ -22,7 +22,7 @@ class   DeltaTypeTheoryUnicodeInputHandler : TypedHandlerDelegate () {
         "\\surface" to "\uD83D\uDE28",
         "\\core" to "\uD83E\uDD2C",
         "\\konstantin" to "\uD83D\uDC10",
-        "\\viktor" to "Bye\uD83E\uDD2B\uD83E\uDDCF\uD83C\uDFFB\u200D♂\uFE0FBye\uD83D\uDDFF",
+        "\\viktor" to "\uD83D\uDDFF \uD83E\uDD2B\uD83E\uDDCF\u200D♂\uFE0F",
         "\\pain" to "λ",
         "\\type-theory" to "☝\uFE0F\uD83E\uDD13",
 
