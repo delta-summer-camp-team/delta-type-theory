@@ -29,6 +29,8 @@ IDENTIFIER    = [a-zA-Z_ℕ∃][a-zA-Z0-9_ℕ∃]*(\.[a-zA-Z_ℕ∃][a-zA-Z0-9_�
       "axiom"      { return DeltaTypeTheoryType.AXIOM_KEYWORD; }
       "def"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
       "fun"        { return DeltaTypeTheoryType.DEF_KEYWORD; }
+      "theorem"    { return DeltaTypeTheoryType.DEF_KEYWORD; }
+      "lemma"      { return DeltaTypeTheoryType.DEF_KEYWORD; }
       ":="         { return DeltaTypeTheoryType.EQUAL; }
       "=>"         { return DeltaTypeTheoryType.FOLLOWS; }
       "->"         { return DeltaTypeTheoryType.TO; }
