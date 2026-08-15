@@ -10,6 +10,7 @@ import camp.delta.deltatypetheory.core.kernel.model.GlobalRef
 import camp.delta.deltatypetheory.core.kernel.model.Lambda
 import camp.delta.deltatypetheory.core.kernel.model.Pi
 import camp.delta.deltatypetheory.core.kernel.model.TypeTerm
+import camp.delta.deltatypetheory.core.kernel.reduce.applyRule
 
 /**
  * Крюк вместо ElaborationContext: по имени глобала возвращает его значение.
@@ -110,18 +111,89 @@ fun definitionallyEqual(
 fun whnf(
     term: CoreTerm,
     ctx: ElaborationContext,
-): CoreTerm = whnf(term) { name -> ctx.lookupGlobal(name.value)?.value }
+): CoreTerm {
+    val reduced =
+        when (term) {
+            is TypeTerm -> term
+
+            is BoundVar -> term
+
+            is GlobalRef -> {
+                val value = ctx.lookupGlobal(term.name.value)?.value
+                if (value != null) {
+                    whnf(value, ctx)
+                } else {
+                    term
+                }
+            }
+
+            is Lambda -> term
+
+            is Pi -> term
+
+            is App -> {
+                val function = whnf(term.function, ctx)
+
+                if (function is Lambda) {
+                    return whnf(
+                        substituteTop(function.body, term.argument),
+                        ctx,
+                    )
+                }
+
+                App(function, term.argument)
+            }
+
+            is GlobalName -> term
+        }
+
+    for (rule in ctx.rules) {
+        val rewritten = applyRule(rule, reduced)
+        if (rewritten != null) {
+            return whnf(rewritten, ctx)
+        }
+    }
+
+    return reduced
+}
 
 fun normalize(
     term: CoreTerm,
     ctx: ElaborationContext,
-): CoreTerm = normalize(term) { name -> ctx.lookupGlobal(name.value)?.value }
+): CoreTerm =
+    when (val head = whnf(term, ctx)) {
+        is Pi -> {
+            Pi(
+                normalize(head.parameterType, ctx),
+                normalize(head.body, ctx),
+            )
+        }
+
+        is Lambda -> {
+            Lambda(
+                normalize(head.parameterType, ctx),
+                normalize(head.body, ctx),
+            )
+        }
+
+        is App -> {
+            App(
+                normalize(head.function, ctx),
+                normalize(head.argument, ctx),
+            )
+        }
+
+        else -> {
+            head
+        }
+    }
 
 fun definitionallyEqual(
     left: CoreTerm,
     right: CoreTerm,
     ctx: ElaborationContext,
-): Boolean = definitionallyEqual(left, right) { name -> ctx.lookupGlobal(name.value)?.value }
+): Boolean =
+    normalize(left, ctx) == normalize(right, ctx)
 
 // ---------------------------------------------------------------
 // Внутренние помощники C6: минимальная подстановка для бета-редукции.

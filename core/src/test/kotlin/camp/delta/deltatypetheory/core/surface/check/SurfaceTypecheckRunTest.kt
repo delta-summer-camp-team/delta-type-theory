@@ -5,6 +5,7 @@ import camp.delta.deltatypetheory.core.surface.model.SurfaceApp
 import camp.delta.deltatypetheory.core.surface.model.SurfaceAxiomDecl
 import camp.delta.deltatypetheory.core.surface.model.SurfaceBinder
 import camp.delta.deltatypetheory.core.surface.model.SurfaceDefDecl
+import camp.delta.deltatypetheory.core.surface.model.SurfaceLambda
 import camp.delta.deltatypetheory.core.surface.model.SurfaceName
 import camp.delta.deltatypetheory.core.surface.model.SurfaceNameRef
 import camp.delta.deltatypetheory.core.surface.model.SurfacePi
@@ -61,6 +62,42 @@ class SurfaceTypecheckRunTest {
       fileName = null,
     )
     val result = SurfaceTypeCheckerImpl.check(program)
+    assertFalse(result.diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error })
+  }
+
+  @Test
+  fun dependentFunctionDefinitionWithAnonymousPiIsAccepted() {
+    // def for_all_A_from_A_A : (T : Type) -> (T -> T) :=
+    //   lambda (Xi : Type) => lambda (d : Xi) => d;
+    val t = name("T")
+    val xi = name("Xi")
+    val d = name("d")
+    val declaration = SurfaceDefDecl(
+      name("for_all_A_from_A_A"),
+      SurfacePi(
+        SurfaceBinder(t, SurfaceTypeTerm()),
+        SurfacePi(
+          SurfaceBinder(null, SurfaceNameRef(t)),
+          SurfaceNameRef(t),
+        ),
+      ),
+      SurfaceLambda(
+        SurfaceBinder(xi, SurfaceTypeTerm()),
+        SurfaceLambda(
+          SurfaceBinder(d, SurfaceNameRef(xi)),
+          SurfaceNameRef(d),
+        ),
+      ),
+      null,
+    )
+    val program = SurfaceProgram(
+      declarations = listOf(declaration),
+      rules = emptyList(),
+      fileName = null,
+    )
+
+    val result = SurfaceTypeCheckerImpl.check(program)
+
     assertFalse(result.diagnostics.any { it.severity == SurfaceDiagnosticSeverity.Error })
   }
 
